@@ -1,4 +1,8 @@
 #include "Polyweb/polyweb.hpp"
+#include "json.hpp"
+#include <boost/process.hpp>
+
+namespace bp = boost::process;
 
 int main() {
     pn::init();
