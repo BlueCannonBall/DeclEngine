@@ -1,3 +1,6 @@
 [submodule "Polyweb"]
 	path = Polyweb
 	url = https://github.com/BlueCannonBall/Polyweb.git
+[submodule "whitakers-words"]
+	path = whitakers-words
+	url = https://github.com/mk270/whitakers-words.git

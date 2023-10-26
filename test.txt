@@ -1,0 +1,11 @@
+magn.a               ADJ    1 1 NOM S F POS             
+magn.a               ADJ    1 1 VOC S F POS             
+magn.a               ADJ    1 1 ABL S F POS             
+magn.a               ADJ    1 1 NOM P N POS             
+magn.a               ADJ    1 1 VOC P N POS             
+magn.a               ADJ    1 1 ACC P N POS             
+magnus, magna -um, major -or -us, maximus -a -um  ADJ   [XXXAO]  
+large/great/big/vast/huge; much; powerful; tall/long/broad; extensive/spacious;
+great (achievement); mighty; distinguished; skilled; bold/confident; proud;
+full/complete/utter/pure; intense; loud; at high price; notable/famous; old;
+
