@@ -7,12 +7,15 @@ OBJS = $(OBJDIR)/main.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polywe
 PREFIX = /usr/local
 TARGET = declengine
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) whitakers-words/bin/words
 	$(CXX) $^ $(CXXFLAGS) $(LDLIBS) -o $@
 
 $(OBJDIR)/main.o: main.cpp $(HEADERS)
 	mkdir -p $(OBJDIR)
 	$(CXX) -c $< $(CXXFLAGS) -o $@
+
+whitakers-words/bin/words:
+	cd whitakers-words && $(MAKE)
 
 $(OBJDIR)/polynet.o: Polyweb/Polynet/polynet.cpp Polyweb/Polynet/polynet.hpp
 	mkdir -p $(OBJDIR)
