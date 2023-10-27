@@ -6,8 +6,8 @@
 *.yml filter=lfs diff=lfs merge=lfs -text
 /Makefile filter=lfs diff=lfs merge=lfs -text
 *.txt filter=lfs diff=lfs merge=lfs -text
-* !text !filter !merge !diff
 *.clang-format filter=lfs diff=lfs merge=lfs -text
+* !text !filter !merge !diff
 *.py filter=lfs diff=lfs merge=lfs -text
 *.json filter=lfs diff=lfs merge=lfs -text
 /LICENSE filter=lfs diff=lfs merge=lfs -text

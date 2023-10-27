@@ -1,10 +1,11 @@
 #include "Polyweb/polyweb.hpp"
+#include "Polyweb/string.hpp"
 #include "json.hpp"
 #include <boost/process.hpp>
+#include <cctype>
 #include <iostream>
 #include <limits>
 #include <string>
-#include <cctype>
 
 using nlohmann::json;
 namespace bp = boost::process;
@@ -25,7 +26,7 @@ int main() {
 
                 bp::ipstream out;
                 bp::child words("./bin/words", word_it->second, bp::start_dir("whitakers-words"), bp::std_out > out);
-    
+
                 std::string word, part_of_speech;
                 out >> word >> part_of_speech;
                 resp["word"] = word;
@@ -45,15 +46,12 @@ int main() {
                     std::string english_word;
                     out.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the first line
                     for (std::string line; std::getline(out, line, '\n');) {
-                        pw::string::trim(line);
-                        if (line.back() == ';') {
-                            for (char c : line) {
-                                if (ispunct(c) || isspace(c)) {
-                                    break;
-                                } else {
-                                    english_word.push_back(c);
-                                }
+                        pw::string::trim_right(line);
+                        if (line.back() == ']') {
+                            for (char c; out.get(c) && !ispunct(c);) {
+                                english_word.push_back(c);
                             }
+                            pw::string::trim_right(english_word);
                             break;
                         }
                     }
@@ -77,14 +75,44 @@ int main() {
                 }
 
                 case 'V': {
-                    int conjugation;
+                    int conjugation, number;
                     std::string tense, voice, mood, plurality;
-                    out >> conjugation >> unknown >> tense >> voice >> mood >> unknown >> plurality;
+                    out >> conjugation >> unknown >> tense >> voice >> mood >> number >> plurality;
                     resp["conjugation"] = conjugation;
                     resp["tense"] = tense;
                     resp["voice"] = voice;
                     resp["mood"] = mood;
+                    resp["number"] = number;
                     resp["plural"] = plurality[0] == 'P';
+
+                    std::string english_word;
+                    out.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the first line
+                    for (std::string line; std::getline(out, line, '\n');) {
+                        pw::string::trim_right(line);
+                        if (line.back() == ']') {
+                            for (char c; out.get(c) && !ispunct(c);) {
+                                english_word.push_back(c);
+                            }
+                            pw::string::trim_right(english_word);
+                            break;
+                        }
+                    }
+
+                    // Conjugate English word
+                    if (tense == "IMPF") {
+                        english_word.insert(0, (plurality[0] == 'S') ? "was " : "were ");
+                        if (english_word.back() == 'e') {
+                            english_word.pop_back();
+                        }
+                        english_word += "ing";
+                    } else if (tense == "PERF") {
+                        english_word += "ed";
+                    } else if (tense == "PLUP") {
+                        english_word.insert(0, "had ");
+                        english_word += "ed";
+                    }
+                    resp["english_word"] = english_word;
+
                     break;
                 }
 
@@ -96,6 +124,35 @@ int main() {
                     resp["casus"] = casus;
                     resp["plural"] = plurality[0] == 'P';
                     resp["gender"] = gender;
+
+                    std::string english_word;
+                    out.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the first line
+                    for (std::string line; std::getline(out, line, '\n');) {
+                        pw::string::trim_right(line);
+                        if (line.back() == ']') {
+                            for (char c; out.get(c) && !ispunct(c);) {
+                                english_word.push_back(c);
+                            }
+                            pw::string::trim_right(english_word);
+                            break;
+                        }
+                    }
+
+                    // Decline English word
+                    // if (plurality[0] == 'P') {
+                    //     switch (english_word.back()) {
+                    //     case 'a':
+                    //     case 'e':
+                    //     case 'i':
+                    //     case 'o':
+                    //     case 'u':
+                    //         english_word.push_back('e');
+                    //         break;
+                    //     }
+                    //     english_word.push_back('s');
+                    // }
+                    resp["english_word"] = english_word;
+
                     break;
                 }
                 }
