@@ -1,6 +1,6 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++14 -O3 -pthread
-LDLIBS = -lcrypto
+CXXFLAGS = -Wall -std=c++14 -g -pthread
+LDLIBS = -lcrypto -licuuc -licui18n
 HEADERS = $(shell find . -name "*.hpp")
 OBJDIR = obj
 OBJS = $(OBJDIR)/main.o $(OBJDIR)/translate.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polyweb_string.o

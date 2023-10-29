@@ -126,4 +126,5 @@ struct WordInfo {
     }
 };
 
+std::string remove_accents(const std::string& str);
 WordInfo query_whitakers_words(const std::string& word);
