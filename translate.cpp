@@ -6,6 +6,9 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <unicode/translit.h>
+#include <unicode/unistr.h>
+#include <unicode/utypes.h>
 
 constexpr size_t hash(const char* str, size_t i = 0) {
     return !str[i] ? 5381 : (hash(str, i + 1) * 33) ^ str[i];
@@ -64,9 +67,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 
     case 3:
         if (tense == TENSE_IMPERFECT) {
-            ret.insert(0, "were ");
+            ret.insert(0, plural ? "were " : "was ");
         }
-        ret.insert(0, "they ");
+        ret.insert(0, plural ? "they " : "it ");
         break;
     }
 
@@ -125,9 +128,23 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
     return ret;
 }
 
+std::string remove_accents(const std::string& str) {
+    icu::UnicodeString unicode_str = icu::UnicodeString::fromUTF8(str);
+
+    UErrorCode status = U_ZERO_ERROR;
+    icu::Transliterator* transliterator = icu::Transliterator::createInstance("NFD; [:Nonspacing Mark:] Remove; NFC", UTRANS_FORWARD, status);
+    transliterator->transliterate(unicode_str);
+
+    std::string ret;
+    unicode_str.toUTF8String(ret);
+    return ret;
+}
+
 WordInfo query_whitakers_words(const std::string& word) {
+    std::string ascii_word = remove_accents(word);
+
     boost::process::ipstream out;
-    boost::process::child words("bin/words", word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out);
+    boost::process::child words("bin/words", ascii_word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out);
 
     WordInfo ret;
 
@@ -135,7 +152,7 @@ WordInfo query_whitakers_words(const std::string& word) {
         std::string split_word, part_of_speech;
         out >> split_word >> part_of_speech;
         if (ret.variants.empty()) {
-            if ((split_word == "Two" && part_of_speech == "words") || (split_word == word && part_of_speech == "========")) { // Check if Latin word wasn't found
+            if ((split_word == "Two" && part_of_speech == "words") || (split_word == ascii_word && part_of_speech == "========")) { // Check if Latin word wasn't found
                 return ret;
             }
             ret.split_word = split_word;
