@@ -3,7 +3,7 @@ CXXFLAGS = -Wall -std=c++14 -O3 -pthread
 LDLIBS = -lcrypto
 HEADERS = $(shell find . -name "*.hpp")
 OBJDIR = obj
-OBJS = $(OBJDIR)/main.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polyweb_string.o
+OBJS = $(OBJDIR)/main.o $(OBJDIR)/translate.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polyweb_string.o
 PREFIX = /usr/local
 TARGET = declengine
 
@@ -11,6 +11,10 @@ $(TARGET): $(OBJS) whitakers-words/bin/words
 	$(CXX) $(OBJS) $(CXXFLAGS) $(LDLIBS) -o $@
 
 $(OBJDIR)/main.o: main.cpp $(HEADERS)
+	mkdir -p $(OBJDIR)
+	$(CXX) -c $< $(CXXFLAGS) -o $@
+
+$(OBJDIR)/translate.o: translate.cpp translate.hpp Polyweb/string.hpp
 	mkdir -p $(OBJDIR)
 	$(CXX) -c $< $(CXXFLAGS) -o $@
 
