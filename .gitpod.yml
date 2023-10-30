@@ -1,2 +1,2 @@
 tasks:
-  - before: sudo apt-get update -y && sudo apt install libboost-all-dev gprbuild gnat -y
+  - before: sudo apt-get update -y && sudo apt install libboost-all-dev libicu-dev gprbuild gnat -y
