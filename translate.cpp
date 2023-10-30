@@ -5,6 +5,7 @@
 #include <chrono>
 #include <limits>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <unicode/translit.h>
 #include <unicode/unistr.h>
@@ -148,16 +149,28 @@ WordInfo query_whitakers_words(const std::string& word) {
 
     WordInfo ret;
 
-    for (;;) {
+    for (; out;) {
+        std::string line;
+        std::getline(out, line, '\n');
+        if (pw::string::trim_right_copy(line).find('[') != std::string::npos ||
+            pw::string::trim_right_copy(line).find(']') != std::string::npos) {
+            continue;
+        }
+        std::istringstream ss(line);
+
         std::string split_word, part_of_speech;
-        out >> split_word >> part_of_speech;
+        ss >> split_word >> part_of_speech;
         if (ret.variants.empty()) {
             if ((split_word == "Two" && part_of_speech == "words") || (split_word == ascii_word && part_of_speech == "========")) { // Check if Latin word wasn't found
                 return ret;
             }
             ret.split_word = split_word;
-        } else if (split_word != ret.split_word) {                         // Variants have ended and definitions have begun
-            out.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the line
+        } else if (split_word != ret.split_word) { // Variants have ended and definitions have begun
+            ss.seekg(ss.beg);
+            for (char c; ss.get(c) && !ispunct(c);) {
+                ret.english_base.push_back(c);
+            }
+            pw::string::trim_right(ret.english_base);
             break;
         }
 
@@ -168,7 +181,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             std::string string_case;
             char string_plurality;
             char string_gender;
-            out >> declension >> unknown >> string_case >> string_plurality >> string_gender;
+            ss >> declension >> unknown >> string_case >> string_plurality >> string_gender;
 
             // Parse case
             Casus casus;
@@ -206,7 +219,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             std::string string_mood;
             Number number;
             char plurality;
-            out >> conjugation >> unknown >> string_tense >> string_voice >> string_mood >> number >> plurality;
+            ss >> conjugation >> unknown >> string_tense >> string_voice >> string_mood >> number >> plurality;
 
             // Parse tense
             Tense tense;
@@ -250,7 +263,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             std::string string_case;
             char string_plurality;
             char string_gender;
-            out >> declension >> unknown >> string_case >> string_plurality >> string_gender;
+            ss >> declension >> unknown >> string_case >> string_plurality >> string_gender;
 
             // Parse case
             Casus casus;
@@ -281,14 +294,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             break;
         }
         }
-
-        out.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the line
     }
-
-    for (char c; out.get(c) && !ispunct(c);) {
-        ret.english_base.push_back(c);
-    }
-    pw::string::trim_right(ret.english_base);
 
     return ret;
 }
