@@ -2,9 +2,8 @@
 #include "Polyweb/string.hpp"
 #include <boost/process.hpp>
 #include <cctype>
-#include <chrono>
-#include <limits>
 #include <memory>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <unicode/translit.h>
@@ -152,30 +151,32 @@ WordInfo query_whitakers_words(const std::string& word) {
     for (; out;) {
         std::string line;
         std::getline(out, line, '\n');
-        if (pw::string::trim_right_copy(line).find('[') != std::string::npos ||
-            pw::string::trim_right_copy(line).find(']') != std::string::npos) {
+        pw::string::trim(line);
+        if (line == "Two words" ||
+            pw::string::ends_with(line, "UNKNOWN")) {
+            break;
+        } else if (line.find('[') != std::string::npos ||
+            line.find(']') != std::string::npos) {
             continue;
         }
         std::istringstream ss(line);
 
-        std::string split_word, part_of_speech;
-        ss >> split_word >> part_of_speech;
-        if (ret.variants.empty()) {
-            if ((split_word == "Two" && part_of_speech == "words") || (split_word == ascii_word && part_of_speech == "========")) { // Check if Latin word wasn't found
-                return ret;
-            }
-            ret.split_word = split_word;
-        } else if (split_word != ret.split_word) { // Variants have ended and definitions have begun
-            ss.seekg(ss.beg);
+        std::string split_word;
+        ss >> split_word;
+        if (!ret.variants.empty() && split_word != ret.split_word) { // Variants have ended and definitions have begun
+            ss.seekg(0);
             for (char c; ss.get(c) && !ispunct(c);) {
                 ret.english_base.push_back(c);
             }
             pw::string::trim_right(ret.english_base);
             break;
         }
+        ret.split_word = split_word;
 
+        std::string string_part_of_speech;
+        ss >> string_part_of_speech;
         int unknown;
-        switch (hash(part_of_speech)) {
+        switch (hash(string_part_of_speech)) {
         case hash("N"): {
             Declension declension;
             std::string string_case;
