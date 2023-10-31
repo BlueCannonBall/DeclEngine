@@ -49,6 +49,20 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
 std::string Verb::english_equivalent(const std::string& english_base) const {
     static constexpr const char* prefixes[4][6][3][2] = {
         { // Indicative mood
+            { // Present tense
+                { // 1st person
+                    "I",
+                    "we",
+                },
+                { // 2nd person
+                    "you",
+                    "y'all",
+                },
+                { // 3rd person
+                    "it",
+                    "they",
+                },
+            },
             { // Imperfect tense
                 { // 1st person
                     "I was",
@@ -117,6 +131,64 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                 { // 3rd person
                     "it will have",
                     "they will have",
+                },
+            },
+        },
+        { // Subjunctive mood
+            { // Present tense
+                { // 1st person
+                    "may I",
+                    "let us",
+                },
+                { // 2nd person
+                    "may you",
+                    "may y'all",
+                },
+                { // 3rd person
+                    "let it",
+                    "let them",
+                },
+            },
+            { // Imperfect tense
+                { // 1st person
+                    "I should",
+                    "we should",
+                },
+                { // 2nd person
+                    "you should",
+                    "y'all should",
+                },
+                { // 3rd person
+                    "it should",
+                    "they should",
+                },
+            },
+            { // Perfect tense
+                { // 1st person
+                    "I may have",
+                    "we may have",
+                },
+                { // 2nd person
+                    "you may have",
+                    "y'all may have",
+                },
+                { // 3rd person
+                    "it may have",
+                    "they may have",
+                },
+            },
+            { // Pluperfect tense
+                { // 1st person
+                    "I should have",
+                    "we should have",
+                },
+                { // 2nd person
+                    "you would have",
+                    "y'all would have",
+                },
+                { // 3rd person
+                    "it would have",
+                    "they would have",
                 },
             },
         },
