@@ -3,7 +3,6 @@
 #include <boost/process.hpp>
 #include <cctype>
 #include <memory>
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <unicode/translit.h>
@@ -48,58 +47,223 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Verb::english_equivalent(const std::string& english_base) const {
+    static constexpr const char* prefixes[4][6][3][2] = {
+        { // Indicative mood
+            { // Imperfect tense
+                { // 1st person
+                    "I was",
+                    "we were",
+                },
+                { // 2nd person
+                    "you were",
+                    "y'all were",
+                },
+                { // 3rd person
+                    "it was",
+                    "they were",
+                },
+            },
+            { // Perfect tense
+                { // 1st person
+                    "I",
+                    "we",
+                },
+                { // 2nd person
+                    "you",
+                    "y'all",
+                },
+                { // 3rd person
+                    "it",
+                    "they",
+                },
+            },
+            { // Pluperfect tense
+                { // 1st person
+                    "I had",
+                    "we had",
+                },
+                { // 2nd person
+                    "you had",
+                    "y'all had",
+                },
+                { // 3rd person
+                    "it had",
+                    "they had",
+                },
+            },
+            { // Future tense
+                { // 1st person
+                    "I shall",
+                    "we shall",
+                },
+                { // 2nd person
+                    "you will",
+                    "y'all will",
+                },
+                { // 3rd person
+                    "it will",
+                    "they will",
+                },
+            },
+            { // Future perfect tense
+                { // 1st person
+                    "I shall have",
+                    "we shall have",
+                },
+                { // 2nd person
+                    "you will have",
+                    "y'all will have",
+                },
+                { // 3rd person
+                    "it will have",
+                    "they will have",
+                },
+            },
+        },
+    };
+
     std::string ret = english_base;
 
-    switch (number) {
-    case 1:
-        if (tense == TENSE_IMPERFECT) {
-            ret.insert(0, plural ? "were " : "was ");
-        }
-        ret.insert(0, plural ? "we " : "I ");
-        break;
+    switch (mood) {
+    case MOOD_INDICATIVE: {
+        switch (tense) {
+        case TENSE_IMPERFECT:
+            switch (number) {
+            case 1: {
+                ret.insert(0, !plural ? "I was " : "we were ");
+                break;
+            }
 
-    case 2:
-        if (tense == TENSE_IMPERFECT) {
-            ret.insert(0, "were ");
-        }
-        ret.insert(0, plural ? "y'all " : "you ");
-        break;
+            case 2:
+                ret.insert(0, !plural ? "you were " : "y'all were ");
+                break;
+            
+            case 3:
+                ret.insert(0, !plural ? "it was " : "it were ");
+                break;
+            }
+            if (ret.back() == 'e') {
+                ret.pop_back();
+            }
+            ret += "ing";
+            break;
 
-    case 3:
-        if (tense == TENSE_IMPERFECT) {
-            ret.insert(0, plural ? "were " : "was ");
+        case TENSE_PLUPERFECT:
+            ret.insert(0, "had ");
+        case TENSE_PERFECT:
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+            break;
+
+        case TENSE_FUTURE_PERFECT:
+            ret.insert(0, "have ");
+        case TENSE_FUTURE:
+            ret.insert(0, number == 1 ? "shall " : "will ");
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+            break;
         }
-        ret.insert(0, plural ? "they " : "it ");
+        break;
+    }
+    }
+
+    switch (mood) {
+    case MOOD_INDICATIVE: {
+        switch (tense) {
+        case TENSE_IMPERFECT:
+            if (ret.back() == 'e') {
+                ret.pop_back();
+            }
+            ret += "ing";
+            break;
+
+        case TENSE_PLUPERFECT:
+            ret.insert(0, "had ");
+        case TENSE_PERFECT:
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+            break;
+
+        case TENSE_FUTURE_PERFECT:
+            ret.insert(0, "have ");
+        case TENSE_FUTURE:
+            ret.insert(0, number == 1 ? "shall " : "will ");
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        switch (number) {
+        case 1:
+            if (tense == TENSE_IMPERFECT) {
+                ret.insert(0, plural ? "were " : "was ");
+            }
+            ret.insert(0, plural ? "we " : "I ");
+            break;
+
+        case 2:
+            if (tense == TENSE_IMPERFECT) {
+                ret.insert(0, "were ");
+            }
+            ret.insert(0, plural ? "y'all " : "you ");
+            break;
+
+        case 3:
+            if (tense == TENSE_IMPERFECT) {
+                ret.insert(0, plural ? "were " : "was ");
+            }
+            ret.insert(0, plural ? "they " : "it ");
+            break;
+        }
         break;
     }
 
-    switch (tense) {
-    case TENSE_IMPERFECT:
-        if (ret.back() == 'e') {
-            ret.pop_back();
-        }
-        ret += "ing";
-        break;
+    case MOOD_SUBJUNCTIVE: {
+        switch (tense) {
+        case TENSE_IMPERFECT:
+            ret.insert(0, "should ");
+            break;
 
-    case TENSE_PERFECT:
-        if (ret.back() == 'e') {
-            ret.push_back('d');
-        } else {
-            ret += "ed";
-        }
-        break;
+        case TENSE_PLUPERFECT:
+            ret.insert(0, "had ");
+        case TENSE_PERFECT:
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+            break;
 
-    case TENSE_PLUPERFECT:
-        ret.insert(0, "had ");
-        if (ret.back() == 'e') {
-            ret.push_back('d');
-        } else {
-            ret += "ed";
-        }
-        break;
+        case TENSE_FUTURE_PERFECT:
+            ret.insert(0, "have ");
+        case TENSE_FUTURE:
+            ret.insert(0, number == 1 ? "shall " : "will ");
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+            break;
 
-    default:
-        break;
+        default:
+            break;
+        }
+    }
     }
 
     return ret;
@@ -152,14 +316,11 @@ WordInfo query_whitakers_words(const std::string& word) {
         std::string line;
         std::getline(out, line, '\n');
         pw::string::trim(line);
+        std::istringstream ss(line);
         if (line == "Two words" ||
             pw::string::ends_with(line, "UNKNOWN")) {
             break;
-        } else if (line.find('[') != std::string::npos ||
-            line.find(']') != std::string::npos) {
-            continue;
         }
-        std::istringstream ss(line);
 
         std::string split_word;
         ss >> split_word;

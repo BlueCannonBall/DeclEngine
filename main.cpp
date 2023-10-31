@@ -1,12 +1,66 @@
 #include "Polyweb/polyweb.hpp"
 #include "json.hpp"
 #include "translate.hpp"
+#include <fstream>
 #include <iostream>
 #include <string>
 
 using nlohmann::json;
 
 int main() {
+    std::ofstream settings("whitakers-words/WORD.MOD");
+    settings << "TRIM_OUTPUT                       Y\n"
+                "HAVE_OUTPUT_FILE                  N\n"
+                "WRITE_OUTPUT_TO_FILE              N\n"
+                "DO_UNKNOWNS_ONLY                  N\n"
+                "WRITE_UNKNOWNS_TO_FILE            N\n"
+                "IGNORE_UNKNOWN_NAMES              Y\n"
+                "IGNORE_UNKNOWN_CAPS               Y\n"
+                "DO_COMPOUNDS                      Y\n"
+                "DO_FIXES                          Y\n"
+                "DO_TRICKS                         Y\n"
+                "DO_DICTIONARY_FORMS               N\n"
+                "SHOW_AGE                          N\n"
+                "SHOW_FREQUENCY                    N\n"
+                "DO_EXAMPLES                       N\n"
+                "DO_ONLY_MEANINGS                  N\n"
+                "DO_STEMS_FOR_UNKNOWN              N\n";
+    settings.close();
+
+    settings.open("whitakers-words/WORD.MDV");
+    settings << "HAVE_STATISTICS_FILE              N\n"
+                "WRITE_STATISTICS_FILE             N\n"
+                "SHOW_DICTIONARY                   N\n"
+                "SHOW_DICTIONARY_LINE              N\n"
+                "SHOW_DICTIONARY_CODES             N\n"
+                "DO_PEARSE_CODES                   N\n"
+                "DO_ONLY_INITIAL_WORD              N\n"
+                "FOR_WORD_LIST_CHECK               N\n"
+                "DO_ONLY_FIXES                     N\n"
+                "DO_FIXES_ANYWAY                   N\n"
+                "USE_PREFIXES                      Y\n"
+                "USE_SUFFIXES                      Y\n"
+                "USE_TACKONS                       Y\n"
+                "DO_MEDIEVAL_TRICKS                Y\n"
+                "DO_SYNCOPE                        Y\n"
+                "DO_TWO_WORDS                      N\n"
+                "INCLUDE_UNKNOWN_CONTEXT           Y\n"
+                "NO_MEANINGS                       N\n"
+                "OMIT_ARCHAIC                      Y\n"
+                "OMIT_MEDIEVAL                     N\n"
+                "OMIT_UNCOMMON                     Y\n"
+                "DO_I_FOR_J                        Y\n"
+                "DO_U_FOR_V                        N\n"
+                "PAUSE_IN_SCREEN_OUTPUT            Y\n"
+                "NO_SCREEN_ACTIVITY                N\n"
+                "UPDATE_LOCAL_DICTIONARY           N\n"
+                "UPDATE_MEANINGS                   N\n"
+                "MINIMIZE_OUTPUT                   Y\n"
+                "START_FILE_CHARACTER             '@'\n"
+                "CHANGE_PARAMETERS_CHARACTER      '#'\n"
+                "CHANGE_DEVELOPER_MODES_CHARACTER '!'\n";
+    settings.close();
+
     pn::init();
     pn::UniqueSock<pw::Server> server;
 
