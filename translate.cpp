@@ -191,7 +191,24 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 std::string Adjective::english_equivalent(const std::string& english_base) const {
     std::string ret = english_base;
 
-    if (plural) {
+    if (degree) {
+        switch (degree) {
+        default:
+            throw std::logic_error("Invalid degree of comparison");
+
+        case DEGREE_COMPARATIVE:
+            if (english_base.back() == 'e') {
+                ret = english_base + 'r';
+            } else {
+                ret = english_base + "er";
+            }
+            break;
+
+        case DEGREE_SUPERLATIVE:
+            ret = "most-" + english_base;
+            break;
+        }
+    } else if (plural) {
         switch (ret.back()) {
         case 'a':
         case 'i':
@@ -261,9 +278,9 @@ WordInfo query_whitakers_words(const std::string& word) {
         case hash("N"): {
             Declension declension;
             std::string string_case;
-            char string_plurality;
-            char string_gender;
-            ss >> declension >> unknown >> string_case >> string_plurality >> string_gender;
+            char plurality;
+            char char_gender;
+            ss >> declension >> unknown >> string_case >> plurality >> char_gender;
 
             // Parse case
             Casus casus;
@@ -279,11 +296,11 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             // Parse plurality
-            bool plural = string_plurality == 'P';
+            bool plural = plurality == 'P';
 
             // Parse gender
             Gender gender;
-            switch (string_gender) {
+            switch (char_gender) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
             case 'N': gender = GENDER_NEUTER; break;
@@ -343,10 +360,10 @@ WordInfo query_whitakers_words(const std::string& word) {
         case hash("ADJ"): {
             Declension declension;
             std::string string_case;
-            char string_plurality;
-            char string_gender;
+            char plurality;
+            char char_gender;
             std::string string_degree;
-            ss >> declension >> unknown >> string_case >> string_plurality >> string_gender;
+            ss >> declension >> unknown >> string_case >> plurality >> char_gender >> string_degree;
 
             // Parse case
             Casus casus;
@@ -362,14 +379,15 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             // Parse plurality
-            bool plural = string_plurality == 'P';
+            bool plural = plurality == 'P';
 
             // Parse gender
             Gender gender;
-            switch (string_gender) {
+            switch (char_gender) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
-            case 'N': gender = GENDER_NEUTER; break;
+            case 'N':
+            case 'C': gender = GENDER_NEUTER; break;
             default: throw std::runtime_error("Invalid gender");
             }
 
