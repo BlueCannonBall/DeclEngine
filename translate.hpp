@@ -24,6 +24,7 @@ enum Gender {
     GENDER_MASCULINE,
     GENDER_FEMININE,
     GENDER_NEUTER, // Not applicable to proper nouns
+    GENDER_COMMON,
 };
 
 enum Degree {

@@ -49,7 +49,7 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Verb::english_equivalent(const std::string& english_base) const {
-    static constexpr const char* prefixes[][6][3][2] = {
+    static constexpr const char* prefixes[4][6][3][2] = {
         // Indicative mood
         {
             // Present tense
@@ -129,11 +129,28 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                 {"it shall ", "they shall "},
             },
         },
+        // Infinitive mood
+        {
+            // Present tense
+            {
+                {"to "},
+            },
+            {},
+            // Perfect tense
+            {
+                {"to have "},
+            },
+            {},
+            // Future tense
+            {
+                {"to be about to "},
+            },
+        },
     };
 
     std::string ret;
-    if (prefixes[mood][tense][person - 1][plural]) {
-        ret = prefixes[mood][tense][person - 1][plural] + english_base; // Add prefix
+    if (prefixes[mood][tense][std::max(person - 1, 0)][plural]) {
+        ret = prefixes[mood][tense][std::max(person - 1, 0)][plural] + english_base; // Add prefix
     } else {
         ret = english_base;
     }
@@ -164,7 +181,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         }
         break;
 
-    case MOOD_SUBJUNCTIVE: {
+    case MOOD_SUBJUNCTIVE:
         switch (tense) {
         case TENSE_PERFECT:
         case TENSE_PLUPERFECT:
@@ -179,7 +196,17 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         default:
             break;
         }
-    }
+        break;
+
+    case MOOD_INFINITIVE:
+        if (tense == TENSE_PERFECT) {
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+            } else {
+                ret += "ed";
+            }
+        }
+        break;
 
     default:
         break;
@@ -306,6 +333,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
             case 'N': gender = GENDER_NEUTER; break;
+            case 'C': gender = GENDER_COMMON; break;
             default: throw std::runtime_error("Invalid gender");
             }
 
@@ -388,8 +416,8 @@ WordInfo query_whitakers_words(const std::string& word) {
             switch (char_gender) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
-            case 'N':
-            case 'C': gender = GENDER_NEUTER; break;
+            case 'N': gender = GENDER_NEUTER; break;
+            case 'C': gender = GENDER_COMMON; break;
             default: throw std::runtime_error("Invalid gender");
             }
 
