@@ -42,9 +42,9 @@ enum Voice {
 
 enum Mood {
     MOOD_INDICATIVE,
+    MOOD_SUBJUNCTIVE,
     MOOD_INFINITIVE,
     MOOD_IMPERATIVE,
-    MOOD_SUBJUNCTIVE,
 };
 
 typedef unsigned short Declension;
