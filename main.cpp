@@ -75,7 +75,6 @@ int main() {
                 WordInfo word_info = query_whitakers_words(word_it->second);
                 if (word_info.is_valid()) {
                     json resp = {
-                        {"split_word", word_info.split_word},
                         {"variants", json::array()},
                         {"english_base", word_info.english_base},
                     };
@@ -121,7 +120,7 @@ int main() {
                             case TENSE_PERFECT: json_variant["tense"] = "perfect"; break;
                             case TENSE_PLUPERFECT: json_variant["tense"] = "pluperfect"; break;
                             case TENSE_FUTURE: json_variant["tense"] = "future"; break;
-                            case TENSE_FUTURE_PERFECT: json_variant["tense"] = "future perfect"; break;
+                            case TENSE_FUTURE_PERFECT: json_variant["tense"] = "future_perfect"; break;
                             }
 
                             switch (verb->voice) {
@@ -131,9 +130,9 @@ int main() {
 
                             switch (verb->mood) {
                             case MOOD_INDICATIVE: json_variant["mood"] = "indicative"; break;
-                            case MOOD_INFINITIVE: json_variant["mood"] = "infinitive"; break;
-                            case MOOD_IMPERATIVE: json_variant["mood"] = "imperative"; break;
                             case MOOD_SUBJUNCTIVE: json_variant["mood"] = "subjunctive"; break;
+                            case MOOD_IMPERATIVE: json_variant["mood"] = "imperative"; break;
+                            case MOOD_INFINITIVE: json_variant["mood"] = "infinitive"; break;
                             }
 
                             json_variant["plural"] = verb->plural;
@@ -161,6 +160,12 @@ int main() {
                             case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
                             case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
                             case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                            }
+
+                            switch (adjective->degree) {
+                            case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
+                            case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
+                            case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;
                             }
 
                             break;

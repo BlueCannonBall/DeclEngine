@@ -26,6 +26,12 @@ enum Gender {
     GENDER_NEUTER, // Not applicable to proper nouns
 };
 
+enum Degree {
+    DEGREE_POSITIVE,
+    DEGREE_COMPARATIVE,
+    DEGREE_SUPERLATIVE,
+};
+
 enum Tense {
     TENSE_PRESENT,
     TENSE_IMPERFECT,
@@ -43,13 +49,13 @@ enum Voice {
 enum Mood {
     MOOD_INDICATIVE,
     MOOD_SUBJUNCTIVE,
-    MOOD_INFINITIVE,
     MOOD_IMPERATIVE,
+    MOOD_INFINITIVE,
 };
 
 typedef unsigned short Declension;
 typedef unsigned short Conjugation;
-typedef unsigned short Number;
+typedef unsigned short Person;
 
 class WordVariant {
 public:
@@ -84,16 +90,16 @@ public:
     Tense tense;
     Voice voice;
     Mood mood;
-    Number number;
+    Person person;
     bool plural;
 
-    Verb(Conjugation conjugation, Tense tense, Voice voice, Mood mood, Number number, bool plural):
+    Verb(Conjugation conjugation, Tense tense, Voice voice, Mood mood, Person person, bool plural):
         WordVariant(PART_OF_SPEECH_VERB),
         conjugation(conjugation),
         tense(tense),
         voice(voice),
         mood(mood),
-        number(number),
+        person(person),
         plural(plural) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
@@ -105,19 +111,20 @@ public:
     Casus casus;
     bool plural;
     Gender gender;
+    Degree degree;
 
-    Adjective(Declension declension, Casus casus, bool plural, Gender gender):
+    Adjective(Declension declension, Casus casus, bool plural, Gender gender, Degree degree):
         WordVariant(PART_OF_SPEECH_ADJECTIVE),
         declension(declension),
         casus(casus),
         plural(plural),
-        gender(gender) {}
+        gender(gender),
+        degree(degree) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
 };
 
 struct WordInfo {
-    std::string split_word;
     std::vector<std::unique_ptr<WordVariant>> variants;
     std::string english_base;
 
