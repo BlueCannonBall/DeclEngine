@@ -1,8 +1,8 @@
 #include "translate.hpp"
 #include "Polyweb/string.hpp"
+#include <algorithm>
 #include <boost/process.hpp>
 #include <cctype>
-#include <iostream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -193,9 +193,6 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
 
     if (degree) {
         switch (degree) {
-        default:
-            throw std::logic_error("Invalid degree of comparison");
-
         case DEGREE_COMPARATIVE:
             if (english_base.back() == 'e') {
                 ret = english_base + 'r';
@@ -207,6 +204,9 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
         case DEGREE_SUPERLATIVE:
             ret = "most-" + english_base;
             break;
+
+        default:
+            throw std::logic_error("Invalid degree of comparison");
         }
     } else if (plural) {
         switch (ret.back()) {
@@ -252,11 +252,13 @@ WordInfo query_whitakers_words(const std::string& word) {
     for (; out;) {
         std::string line;
         std::getline(out, line, '\n');
-        pw::string::trim(line);
+        pw::string::trim_right(line);
         std::istringstream ss(line);
         if (line == "Two words" ||
             pw::string::ends_with(line, "UNKNOWN")) {
             break;
+        } else if (line.front() == ' ') {
+            continue;
         }
 
         std::string split_word;

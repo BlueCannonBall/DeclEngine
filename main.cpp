@@ -68,7 +68,8 @@ int main() {
         pw::HTTPRoute {
             [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
                 pw::QueryParameters::map_type::const_iterator word_it;
-                if ((word_it = req.query_parameters->find("word")) == req.query_parameters->end()) {
+                if ((word_it = req.query_parameters->find("word")) == req.query_parameters->end() ||
+                    word_it->second.find(' ') != std::string::npos) {
                     return pw::HTTPResponse::make_basic(400);
                 }
 
