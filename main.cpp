@@ -104,6 +104,7 @@ int main() {
                             case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
                             case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
                             case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
                             }
 
                             break;
@@ -161,6 +162,7 @@ int main() {
                             case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
                             case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
                             case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
                             }
 
                             switch (adjective->degree) {
