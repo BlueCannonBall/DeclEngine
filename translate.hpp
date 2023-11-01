@@ -65,6 +65,7 @@ public:
     WordVariant(PartOfSpeech part_of_speech):
         part_of_speech(part_of_speech) {}
 
+    virtual ~WordVariant() = default;
     virtual std::string english_equivalent(const std::string& english_base) const = 0;
 };
 

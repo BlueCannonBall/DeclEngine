@@ -50,6 +50,91 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Verb::english_equivalent(const std::string& english_base) const {
+    static constexpr const char* be[4][6][3][2] = {
+        // Indicative mood
+        {
+            // Present tense
+            {
+                {"I am", "we are"},
+                {"you are", "y'all are"},
+                {"it is", "they are"},
+            },
+            // Imperfect tense
+            {
+                {"I was", "we were"},
+                {"you were", "y'all were"},
+                {"it was", "they were"},
+            },
+            // Perfect tense
+            {
+                {"I have been", "we have been"},
+                {"you have been", "y'all have been"},
+                {"it has been", "they have been"},
+            },
+            // Pluperfect tense
+            {
+                {"I had been", "we had been"},
+                {"you had been", "y'all had been"},
+                {"it had been", "they had been"},
+            },
+            // Future tense
+            {
+                {"I shall be", "we shall be"},
+                {"you will be", "y'all will be"},
+                {"it will be", "they will be"},
+            },
+            // Future perfect tense
+            {
+                {"I shall have been", "we shall have been"},
+                {"you will have been", "y'all will have been"},
+                {"it will have been", "they will have been"},
+            },
+        },
+        // Subjunctive mood
+        {
+            // Present tense
+            {
+                {"may I be", "let us be"},
+                {"may you be", "may y'all be"},
+                {"let it be", "let them be"},
+            },
+            // Imperfect tense
+            {
+                {"I should be", "we should be"},
+                {"you would be", "y'all would be"},
+                {"it would be", "they would be"},
+            },
+            // Perfect tense
+            {
+                {"I may have been", "we may have been"},
+                {"you may have been", "y'all may have been"},
+                {"it may have been", "they may have been"},
+            },
+            // Pluperfect tense
+            {
+                {"I should have been", "we should have been"},
+                {"you would have been", "y'all would have been"},
+                {"it would have been", "they would have been"}},
+        },
+        {},
+        // Infinitive mood
+        {
+            // Present tense
+            {
+                {"to be"},
+            },
+            {},
+            // Perfect tense
+            {
+                {"to have been"},
+            },
+            {},
+            // Future tense
+            {
+                {"to be about to be"},
+            },
+        },
+    };
     static constexpr const char* prefixes[4][6][3][2] = {
         // Indicative mood
         {
@@ -150,8 +235,13 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
     };
 
     std::string ret;
-    if (prefixes[mood][tense][std::max(person - 1, 0)][plural]) {
-        ret = prefixes[mood][tense][std::max(person - 1, 0)][plural] + english_base; // Add prefix
+    if (english_base == "be") {
+        if (be[mood][tense][person][plural]) {
+            return be[mood][tense][person][plural];
+        }
+    }
+    if (prefixes[mood][tense][person][plural]) {
+        ret = prefixes[mood][tense][person][plural] + english_base; // Add prefix
     } else {
         ret = english_base;
     }
@@ -378,6 +468,11 @@ WordInfo query_whitakers_words(const std::string& word) {
             case hash("IMP"): mood = MOOD_IMPERATIVE; break;
             case hash("INF"): mood = MOOD_INFINITIVE; break;
             default: throw std::runtime_error("Invalid mood");
+            }
+
+            // Limit person
+            if (person > 0) {
+                --person;
             }
 
             // Parse plurality
