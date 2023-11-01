@@ -7,6 +7,7 @@
 enum PartOfSpeech {
     PART_OF_SPEECH_NOUN,
     PART_OF_SPEECH_VERB,
+    PART_OF_SPEECH_PARTICIPLE,
     PART_OF_SPEECH_ADJECTIVE,
 };
 
@@ -103,6 +104,27 @@ public:
         mood(mood),
         person(person),
         plural(plural) {}
+
+    std::string english_equivalent(const std::string& english_base) const override;
+};
+
+class Participle : public WordVariant {
+public:
+    Conjugation conjugation;
+    Casus casus;
+    bool plural;
+    Gender gender;
+    Tense tense;
+    Voice voice;
+
+    Participle(Conjugation conjugation, Casus casus, bool plural, Gender gender, Tense tense, Voice voice):
+        WordVariant(PART_OF_SPEECH_PARTICIPLE),
+        conjugation(conjugation),
+        casus(casus),
+        plural(plural),
+        gender(gender),
+        tense(tense),
+        voice(voice) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
 };
