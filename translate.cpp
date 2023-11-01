@@ -306,6 +306,10 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
     return ret;
 }
 
+std::string Participle::english_equivalent(const std::string& english_base) const {
+    return english_base;
+}
+
 std::string Adjective::english_equivalent(const std::string& english_base) const {
     std::string ret;
     if (degree) {
@@ -397,9 +401,9 @@ WordInfo query_whitakers_words(const std::string& word) {
         case hash("N"): {
             Declension declension;
             std::string string_case;
-            char plurality;
+            char char_plurality;
             char char_gender;
-            ss >> declension >> unknown >> string_case >> plurality >> char_gender;
+            ss >> declension >> unknown >> string_case >> char_plurality >> char_gender;
 
             // Parse case
             Casus casus;
@@ -415,7 +419,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             // Parse plurality
-            bool plural = plurality == 'P';
+            bool plural = char_plurality == 'P';
 
             // Parse gender
             Gender gender;
@@ -437,8 +441,8 @@ WordInfo query_whitakers_words(const std::string& word) {
             std::string string_voice;
             std::string string_mood;
             Person person;
-            char plurality;
-            ss >> conjugation >> unknown >> string_tense >> string_voice >> string_mood >> person >> plurality;
+            char char_plurality;
+            ss >> conjugation >> unknown >> string_tense >> string_voice >> string_mood >> person >> char_plurality;
 
             // Parse tense
             Tense tense;
@@ -476,19 +480,20 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             // Parse plurality
-            bool plural = plurality == 'P';
+            bool plural = char_plurality == 'P';
 
             ret.variants.push_back(std::make_unique<Verb>(conjugation, tense, voice, mood, person, plural));
             break;
         }
 
-        case hash("ADJ"): {
-            Declension declension;
+        case hash("VPAR"): {
+            Conjugation conjugation;
             std::string string_case;
-            char plurality;
+            char char_plurality;
             char char_gender;
-            std::string string_degree;
-            ss >> declension >> unknown >> string_case >> plurality >> char_gender >> string_degree;
+            std::string string_tense;
+            std::string string_voice;
+            ss >> conjugation >> unknown >> string_case >> char_plurality >> char_gender >> string_case >> string_voice;
 
             // Parse case
             Casus casus;
@@ -504,7 +509,65 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             // Parse plurality
-            bool plural = plurality == 'P';
+            bool plural = char_plurality == 'P';
+
+            // Parse gender
+            Gender gender;
+            switch (char_gender) {
+            case 'M': gender = GENDER_MASCULINE; break;
+            case 'F': gender = GENDER_FEMININE; break;
+            case 'N': gender = GENDER_NEUTER; break;
+            case 'C': gender = GENDER_COMMON; break;
+            default: throw std::runtime_error("Invalid gender");
+            }
+
+            // Parse tense
+            Tense tense;
+            switch (hash(string_tense)) {
+            case hash("PRES"): tense = TENSE_PRESENT; break;
+            case hash("IMPF"): tense = TENSE_IMPERFECT; break;
+            case hash("PERF"): tense = TENSE_PERFECT; break;
+            case hash("PLUP"): tense = TENSE_PLUPERFECT; break;
+            case hash("FUT"): tense = TENSE_FUTURE; break;
+            case hash("FUTP"): tense = TENSE_FUTURE_PERFECT; break;
+            default: throw std::runtime_error("Invalid tense");
+            }
+
+            // Parse voice
+            Voice voice;
+            switch (hash(string_voice)) {
+            case hash("ACTIVE"): voice = VOICE_ACTIVE; break;
+            case hash("PASSIVE"): voice = VOICE_PASSIVE; break;
+            default: throw std::runtime_error("Invalid voice");
+            }
+
+            ret.variants.push_back(std::make_unique<Participle>(conjugation, casus, plural, gender, tense, voice));
+            break;
+        }
+
+        case hash("ADJ"): {
+            Declension declension;
+            std::string string_case;
+            char char_plurality;
+            char char_gender;
+            std::string string_degree;
+            ss >> declension >> unknown >> string_case >> char_plurality >> char_gender >> string_degree;
+
+            // Parse case
+            Casus casus;
+            switch (hash(string_case)) {
+            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("GEN"): casus = CASUS_GENITIVE; break;
+            case hash("DAT"): casus = CASUS_DATIVE; break;
+            case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
+            case hash("ABL"): casus = CASUS_ABLATIVE; break;
+            case hash("VOC"): casus = CASUS_VOCATIVE; break;
+            case hash("LOC"): casus = CASUS_LOCATIVE; break;
+            default: throw std::runtime_error("Invalid case");
+            }
+
+            // Parse plurality
+            bool plural = char_plurality == 'P';
 
             // Parse gender
             Gender gender;
