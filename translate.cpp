@@ -292,6 +292,13 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     {"it shall be ", "they shall be "},
                 },
             },
+            // Infinitive mood
+            {
+                // Present tense
+                {
+                    {"to be "},
+                },
+            },
         },
     };
 
