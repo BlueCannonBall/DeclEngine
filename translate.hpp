@@ -8,7 +8,9 @@ enum PartOfSpeech {
     PART_OF_SPEECH_NOUN,
     PART_OF_SPEECH_VERB,
     PART_OF_SPEECH_PARTICIPLE,
+    PART_OF_SPEECH_SUPINE,
     PART_OF_SPEECH_ADJECTIVE,
+    PART_OF_SPEECH_ADVERB,
 };
 
 enum Casus {
@@ -129,6 +131,23 @@ public:
     std::string english_equivalent(const std::string& english_base) const override;
 };
 
+class Supine : public WordVariant {
+public:
+    Conjugation conjugation;
+    Casus casus;
+    bool plural;
+    Gender gender;
+
+    Supine(Conjugation conjugation, Casus casus, bool plural, Gender gender):
+        WordVariant(PART_OF_SPEECH_SUPINE),
+        conjugation(conjugation),
+        casus(casus),
+        plural(plural),
+        gender(gender) {}
+
+    std::string english_equivalent(const std::string& english_base) const override;
+};
+
 class Adjective : public WordVariant {
 public:
     Declension declension;
@@ -143,6 +162,17 @@ public:
         casus(casus),
         plural(plural),
         gender(gender),
+        degree(degree) {}
+
+    std::string english_equivalent(const std::string& english_base) const override;
+};
+
+class Adverb : public WordVariant {
+public:
+    Degree degree;
+
+    Adverb(Degree degree):
+        WordVariant(PART_OF_SPEECH_ADVERB),
         degree(degree) {}
 
     std::string english_equivalent(const std::string& english_base) const override;

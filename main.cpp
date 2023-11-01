@@ -184,6 +184,34 @@ int main() {
                             break;
                         }
 
+                        case PART_OF_SPEECH_SUPINE: {
+                            json_variant["part_of_speech"] = "supine";
+                            auto supine = (Supine*) variant.get();
+
+                            json_variant["conjugation"] = supine->conjugation;
+
+                            switch (supine->casus) {
+                            case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
+                            case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
+                            case CASUS_DATIVE: json_variant["case"] = "dative"; break;
+                            case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
+                            case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
+                            case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
+                            case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
+                            }
+
+                            json_variant["plural"] = supine->plural;
+
+                            switch (supine->gender) {
+                            case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
+                            case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
+                            case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
+                            }
+
+                            break;
+                        }
+
                         case PART_OF_SPEECH_ADJECTIVE: {
                             json_variant["part_of_speech"] = "adjective";
                             auto adjective = (Adjective*) variant.get();
@@ -208,6 +236,19 @@ int main() {
                             }
 
                             switch (adjective->degree) {
+                            case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
+                            case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
+                            case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;
+                            }
+
+                            break;
+                        }
+
+                        case PART_OF_SPEECH_ADVERB: {
+                            json_variant["part_of_speech"] = "adverb";
+                            auto adverb = (Adverb*) variant.get();
+
+                            switch (adverb->degree) {
                             case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
                             case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
                             case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;

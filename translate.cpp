@@ -19,11 +19,17 @@ inline size_t hash(const std::string& str, size_t i = 0) {
 }
 
 std::string Noun::english_equivalent(const std::string& english_base) const {
+    static constexpr const char* prefixes[7] = {
+        nullptr,
+        "of ",
+        "to/for ",
+        nullptr,
+        "by ",
+    };
+
     std::string ret;
-    if (casus == CASUS_GENITIVE) {
-        ret = "of " + english_base;
-    } else if (casus == CASUS_DATIVE) {
-        ret = "to/for " + english_base;
+    if (prefixes[casus]) {
+        ret = prefixes[casus] + english_base;
     } else {
         ret = english_base;
     }
@@ -302,12 +308,13 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         },
     };
 
-    std::string ret;
     if (english_base == "be") {
         if (be[mood][tense][person][plural]) {
             return be[mood][tense][person][plural];
         }
     }
+
+    std::string ret;
     if (prefixes[voice][mood][tense][person][plural]) {
         ret = prefixes[voice][mood][tense][person][plural] + english_base; // Add prefix
     } else {
@@ -373,14 +380,12 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             break;
         }
         break;
-    
+
     case VOICE_PASSIVE:
-        if (tense == TENSE_PERFECT) {
-            if (ret.back() == 'e') {
-                ret.push_back('d');
-            } else {
-                ret += "ed";
-            }
+        if (ret.back() == 'e') {
+            ret.push_back('d');
+        } else {
+            ret += "ed";
         }
         break;
     }
@@ -389,31 +394,58 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Participle::english_equivalent(const std::string& english_base) const {
-    return english_base;
+    static constexpr const char* prefixes[7] = {
+        nullptr,
+        "of ",
+        "to/for ",
+        nullptr,
+        "by ",
+    };
+
+    std::string ret;
+    if (prefixes[casus]) {
+        ret = prefixes[casus] + english_base;
+    } else {
+        ret = english_base;
+    }
+
+    if (ret.back() == 'e') {
+        ret.pop_back();
+    }
+    ret += "ing";
+
+    return ret;
+}
+
+std::string Supine::english_equivalent(const std::string& english_base) const {
+    switch (casus) {
+    case CASUS_ACCUSATIVE: return "to " + english_base;
+    case CASUS_ABLATIVE: return "be " + english_base;
+    default: throw std::logic_error("Invalid case");
+    }
 }
 
 std::string Adjective::english_equivalent(const std::string& english_base) const {
-    std::string ret;
     if (degree) {
         switch (degree) {
         case DEGREE_COMPARATIVE:
             if (english_base.back() == 'e') {
-                ret = english_base + 'r';
+                return english_base + 'r';
             } else {
-                ret = english_base + "er";
+                return english_base + "er";
             }
-            break;
 
         case DEGREE_SUPERLATIVE:
-            ret = "most-" + english_base;
-            break;
+            return "most-" + english_base;
 
         default:
             throw std::logic_error("Invalid degree of comparison");
         }
     } else if (plural) {
-        ret = english_base;
-        switch (ret.back()) {
+        std::string ret;
+        switch (english_base.back()) {
+        case 'y':
+            ret.back() = 'i';
         case 'a':
         case 'i':
         case 'o':
@@ -421,15 +453,51 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
         case 's':
             ret.push_back('e');
             break;
-
-        case 'y':
-            ret.back() = 'i';
-            ret.push_back('e');
-            break;
         }
         ret.push_back('s');
+        return ret;
     }
-    return ret;
+
+    return english_base;
+}
+
+std::string Adverb::english_equivalent(const std::string& english_base) const {
+    if (degree) {
+        std::string ret;
+        if (pw::string::ends_with(english_base, "ly")) {
+            ret = english_base.substr(0, english_base.size() - 2);
+        }
+
+        switch (degree) {
+        case DEGREE_COMPARATIVE:
+            if (ret.back() == 'e') {
+                ret.push_back('r');
+            } else if (ret.back() == 'i') {
+                ret.back() = 'e';
+                ret.push_back('r');
+            } else {
+                ret += "er";
+            }
+            break;
+
+        case DEGREE_SUPERLATIVE:
+            ret.insert(0, "most-");
+            break;
+
+        default:
+            throw std::logic_error("Invalid degree of comparison");
+        }
+
+        return ret;
+    } else if (!pw::string::ends_with(english_base, "ly")) {
+        if (english_base.back() == 'y') {
+            return english_base.substr(0, english_base.size() - 1) + "ily";
+        } else {
+            return english_base + "ly";
+        }
+    }
+
+    return english_base;
 }
 
 std::string remove_accents(const std::string& str) {
@@ -509,7 +577,8 @@ WordInfo query_whitakers_words(const std::string& word) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
             case 'N': gender = GENDER_NEUTER; break;
-            case 'C': gender = GENDER_COMMON; break;
+            case 'C':
+            case 'X': gender = GENDER_COMMON; break;
             default: throw std::runtime_error("Invalid gender");
             }
 
@@ -575,7 +644,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             char char_gender;
             std::string string_tense;
             std::string string_voice;
-            ss >> conjugation >> unknown >> string_case >> char_plurality >> char_gender >> string_case >> string_voice;
+            ss >> conjugation >> unknown >> string_case >> char_plurality >> char_gender >> string_tense >> string_voice;
 
             // Parse case
             Casus casus;
@@ -599,7 +668,8 @@ WordInfo query_whitakers_words(const std::string& word) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
             case 'N': gender = GENDER_NEUTER; break;
-            case 'C': gender = GENDER_COMMON; break;
+            case 'C':
+            case 'X': gender = GENDER_COMMON; break;
             default: throw std::runtime_error("Invalid gender");
             }
 
@@ -624,6 +694,44 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             ret.variants.push_back(std::make_unique<Participle>(conjugation, casus, plural, gender, tense, voice));
+            break;
+        }
+
+        case hash("SUPINE"): {
+            Conjugation conjugation;
+            std::string string_case;
+            char char_plurality;
+            char char_gender;
+            ss >> conjugation >> unknown >> string_case >> char_plurality >> char_gender;
+
+            // Parse case
+            Casus casus;
+            switch (hash(string_case)) {
+            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("GEN"): casus = CASUS_GENITIVE; break;
+            case hash("DAT"): casus = CASUS_DATIVE; break;
+            case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
+            case hash("ABL"): casus = CASUS_ABLATIVE; break;
+            case hash("VOC"): casus = CASUS_VOCATIVE; break;
+            case hash("LOC"): casus = CASUS_LOCATIVE; break;
+            default: throw std::runtime_error("Invalid case");
+            }
+
+            // Parse plurality
+            bool plural = char_plurality == 'P';
+
+            // Parse gender
+            Gender gender;
+            switch (char_gender) {
+            case 'M': gender = GENDER_MASCULINE; break;
+            case 'F': gender = GENDER_FEMININE; break;
+            case 'N': gender = GENDER_NEUTER; break;
+            case 'C':
+            case 'X': gender = GENDER_COMMON; break;
+            default: throw std::runtime_error("Invalid gender");
+            }
+
+            ret.variants.push_back(std::make_unique<Supine>(conjugation, casus, plural, gender));
             break;
         }
 
@@ -657,7 +765,8 @@ WordInfo query_whitakers_words(const std::string& word) {
             case 'M': gender = GENDER_MASCULINE; break;
             case 'F': gender = GENDER_FEMININE; break;
             case 'N': gender = GENDER_NEUTER; break;
-            case 'C': gender = GENDER_COMMON; break;
+            case 'C':
+            case 'X': gender = GENDER_COMMON; break;
             default: throw std::runtime_error("Invalid gender");
             }
 
@@ -671,6 +780,23 @@ WordInfo query_whitakers_words(const std::string& word) {
             }
 
             ret.variants.push_back(std::make_unique<Adjective>(declension, casus, plural, gender, degree));
+            break;
+        }
+
+        case hash("ADV"): {
+            std::string string_degree;
+            ss >> string_degree;
+
+            // Parse degree
+            Degree degree;
+            switch (hash(string_degree)) {
+            case hash("POS"): degree = DEGREE_POSITIVE; break;
+            case hash("COMP"): degree = DEGREE_COMPARATIVE; break;
+            case hash("SUPER"): degree = DEGREE_SUPERLATIVE; break;
+            default: throw std::runtime_error("Invalid degree of comparison");
+            }
+
+            ret.variants.push_back(std::make_unique<Adverb>(degree));
             break;
         }
         }
