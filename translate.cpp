@@ -135,101 +135,162 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             },
         },
     };
-    static constexpr const char* prefixes[4][6][3][2] = {
-        // Indicative mood
+    static constexpr const char* prefixes[2][4][6][3][2] = {
+        // Active voice
         {
-            // Present tense
+            // Indicative mood
             {
-                {"I ", "we "},
-                {"you ", "y'all "},
-                {"it ", "they "},
+                // Present tense
+                {
+                    {"I ", "we "},
+                    {"you ", "y'all "},
+                    {"it ", "they "},
+                },
+                // Imperfect tense
+                {
+                    {"I was ", "we were "},
+                    {"you were ", "y'all were "},
+                    {"it was ", "they were "},
+                },
+                // Perfect tense
+                {
+                    {"I ", "we "},
+                    {"you ", "y'all "},
+                    {"it ", "they "},
+                },
+                // Pluperfect tense
+                {
+                    {"I had ", "we had "},
+                    {"you had ", "y'all had "},
+                    {"it had ", "they had "},
+                },
+                // Future tense
+                {
+                    {"I shall ", "we shall "},
+                    {"you will ", "y'all will "},
+                    {"it will ", "they will "},
+                },
+                // Future perfect tense
+                {
+                    {"I shall have ", "we shall have "},
+                    {"you will have ", "y'all will have "},
+                    {"it will have ", "they will have "},
+                },
             },
-            // Imperfect tense
+            // Subjunctive mood
             {
-                {"I was ", "we were "},
-                {"you were ", "y'all were "},
-                {"it was ", "they were "},
+                // Present tense
+                {
+                    {"may I ", "let us "},
+                    {"may you ", "may y'all "},
+                    {"let it ", "let them "},
+                },
+                // Imperfect tense
+                {
+                    {"I should ", "we should "},
+                    {"you should ", "y'all should "},
+                    {"it should ", "they should "},
+                },
+                // Perfect tense
+                {
+                    {"I may have ", "we may have "},
+                    {"you may have ", "y'all may have "},
+                    {"it may have ", "they may have "},
+                },
+                // Pluperfect tense
+                {
+                    {"I should have ", "we should have "},
+                    {"you would have ", "y'all would have "},
+                    {"it would have ", "they would have "},
+                },
             },
-            // Perfect tense
-            {
-                {"I ", "we "},
-                {"you ", "y'all "},
-                {"it ", "they "},
-            },
-            // Pluperfect tense
-            {
-                {"I had ", "we had "},
-                {"you had ", "y'all had "},
-                {"it had ", "they had "},
-            },
-            // Future tense
-            {
-                {"I shall ", "we shall "},
-                {"you will ", "y'all will "},
-                {"it will ", "they will "},
-            },
-            // Future perfect tense
-            {
-                {"I shall have ", "we shall have "},
-                {"you will have ", "y'all will have "},
-                {"it will have ", "they will have "},
-            },
-        },
-        // Subjunctive mood
-        {
-            // Present tense
-            {
-                {"may I ", "let us "},
-                {"may you ", "may y'all "},
-                {"let it ", "let them "},
-            },
-            // Imperfect tense
-            {
-                {"I should ", "we should "},
-                {"you should ", "y'all should "},
-                {"it should ", "they should "},
-            },
-            // Perfect tense
-            {
-                {"I may have ", "we may have "},
-                {"you may have ", "y'all may have "},
-                {"it may have ", "they may have "},
-            },
-            // Pluperfect tense
-            {
-                {"I should have ", "we should have "},
-                {"you would have ", "y'all would have "},
-                {"it would have ", "they would have "},
-            },
-        },
-        // Imperative mood
-        {
-            {},
-            {},
-            {},
-            {},
-            // Future tense
+            // Imperative mood
             {
                 {},
-                {"thou shalt ", "ye shall "},
-                {"it shall ", "they shall "},
+                {},
+                {},
+                {},
+                // Future tense
+                {
+                    {},
+                    {"you shall ", "y'all shall "},
+                    {"it shall ", "they shall "},
+                },
+            },
+            // Infinitive mood
+            {
+                // Present tense
+                {
+                    {"to "},
+                },
+                {},
+                // Perfect tense
+                {
+                    {"to have "},
+                },
+                {},
+                // Future tense
+                {
+                    {"to be about to "},
+                },
             },
         },
-        // Infinitive mood
+        // Passive voice
         {
-            // Present tense
+            // Indicative mood
             {
-                {"to "},
+                // Present tense
+                {
+                    {"I am ", "we are "},
+                    {"you are ", "y'all are "},
+                    {"it is ", "they are "},
+                },
+                // Imperfect tense
+                {
+                    {"I was ", "we were "},
+                    {"you were ", "y'all were "},
+                    {"it was ", "they were "},
+                },
+                {},
+                {},
+                // Future tense
+                {
+                    {"I shall be ", "we will be "},
+                    {"you will be ", "y'all will be "},
+                    {"it will be ", "they will be "},
+                },
             },
-            {},
-            // Perfect tense
+            // Subjunctive mood
             {
-                {"to have "},
+                // Present tense
+                {
+                    {"may I be ", "may we be "},
+                    {"may you be ", "may y'all be "},
+                    {"let it be ", "let them be "},
+                },
+                // Imperfect tense
+                {
+                    {"I should be ", "we should be "},
+                    {"you would be ", "y'all would be "},
+                    {"it would be ", "they would be "},
+                },
             },
-            {},
-            // Future tense
+            // Imperative mood
             {
-                {"to be about to "},
+                // Present tense
+                {
+                    {},
+                    {"be ", "be "},
+                },
+                {},
+                {},
+                {},
+                // Future tense
+                {
+                    {},
+                    {"you shall be "},
+                    {"it shall be ", "they shall be "},
+                },
             },
         },
     };
@@ -240,30 +301,64 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             return be[mood][tense][person][plural];
         }
     }
-    if (prefixes[mood][tense][person][plural]) {
-        ret = prefixes[mood][tense][person][plural] + english_base; // Add prefix
+    if (prefixes[voice][mood][tense][person][plural]) {
+        ret = prefixes[voice][mood][tense][person][plural] + english_base; // Add prefix
     } else {
         ret = english_base;
     }
 
     // Add suffix
-    switch (mood) {
-    case MOOD_INDICATIVE:
-        switch (tense) {
-        case TENSE_IMPERFECT:
-            if (ret.back() == 'e') {
-                ret.pop_back();
+    switch (voice) {
+    case VOICE_ACTIVE:
+        switch (mood) {
+        case MOOD_INDICATIVE:
+            switch (tense) {
+            case TENSE_IMPERFECT:
+                if (ret.back() == 'e') {
+                    ret.pop_back();
+                }
+                ret += "ing";
+                break;
+
+            case TENSE_PERFECT:
+            case TENSE_PLUPERFECT:
+            case TENSE_FUTURE_PERFECT:
+                if (ret.back() == 'e') {
+                    ret.push_back('d');
+                } else {
+                    ret += "ed";
+                }
+                break;
+
+            default:
+                break;
             }
-            ret += "ing";
             break;
 
-        case TENSE_PERFECT:
-        case TENSE_PLUPERFECT:
-        case TENSE_FUTURE_PERFECT:
-            if (ret.back() == 'e') {
-                ret.push_back('d');
-            } else {
-                ret += "ed";
+        case MOOD_SUBJUNCTIVE:
+            switch (tense) {
+            case TENSE_PERFECT:
+            case TENSE_PLUPERFECT:
+            case TENSE_FUTURE_PERFECT:
+                if (ret.back() == 'e') {
+                    ret.push_back('d');
+                } else {
+                    ret += "ed";
+                }
+                break;
+
+            default:
+                break;
+            }
+            break;
+
+        case MOOD_INFINITIVE:
+            if (tense == TENSE_PERFECT) {
+                if (ret.back() == 'e') {
+                    ret.push_back('d');
+                } else {
+                    ret += "ed";
+                }
             }
             break;
 
@@ -271,25 +366,8 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             break;
         }
         break;
-
-    case MOOD_SUBJUNCTIVE:
-        switch (tense) {
-        case TENSE_PERFECT:
-        case TENSE_PLUPERFECT:
-        case TENSE_FUTURE_PERFECT:
-            if (ret.back() == 'e') {
-                ret.push_back('d');
-            } else {
-                ret += "ed";
-            }
-            break;
-
-        default:
-            break;
-        }
-        break;
-
-    case MOOD_INFINITIVE:
+    
+    case VOICE_PASSIVE:
         if (tense == TENSE_PERFECT) {
             if (ret.back() == 'e') {
                 ret.push_back('d');
@@ -297,9 +375,6 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                 ret += "ed";
             }
         }
-        break;
-
-    default:
         break;
     }
 
