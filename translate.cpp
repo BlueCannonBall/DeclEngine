@@ -329,9 +329,11 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             switch (tense) {
             case TENSE_IMPERFECT:
                 if (ret.back() == 'e') {
-                    ret.pop_back();
+                    ret.back() = 'i';
+                    ret += "ng";
+                } else {
+                    ret += "ing";
                 }
-                ret += "ing";
                 break;
 
             case TENSE_PERFECT:
@@ -410,9 +412,11 @@ std::string Participle::english_equivalent(const std::string& english_base) cons
     }
 
     if (ret.back() == 'e') {
-        ret.pop_back();
+        ret.back() = 'i';
+        ret += "ng";
+    } else {
+        ret += "ing";
     }
-    ret += "ing";
 
     return ret;
 }
