@@ -19,12 +19,13 @@ inline size_t hash(const std::string& str, size_t i = 0) {
 }
 
 std::string Noun::english_equivalent(const std::string& english_base) const {
-    std::string ret = english_base;
-
+    std::string ret;
     if (casus == CASUS_GENITIVE) {
-        ret.insert(0, "of ");
+        ret = "of " + english_base;
     } else if (casus == CASUS_DATIVE) {
-        ret.insert(0, "to/for ");
+        ret = "to/for " + english_base;
+    } else {
+        ret = english_base;
     }
 
     if (plural) {
@@ -38,8 +39,8 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
             break;
 
         case 'y':
-            ret.pop_back();
-            ret += "ie";
+            ret.back() = 'i';
+            ret.push_back('e');
             break;
         }
         ret.push_back('s');
@@ -216,8 +217,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Adjective::english_equivalent(const std::string& english_base) const {
-    std::string ret = english_base;
-
+    std::string ret;
     if (degree) {
         switch (degree) {
         case DEGREE_COMPARATIVE:
@@ -236,6 +236,7 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
             throw std::logic_error("Invalid degree of comparison");
         }
     } else if (plural) {
+        ret = english_base;
         switch (ret.back()) {
         case 'a':
         case 'i':
@@ -246,13 +247,12 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
             break;
 
         case 'y':
-            ret.pop_back();
-            ret += "ie";
+            ret.back() = 'i';
+            ret.push_back('e');
             break;
         }
         ret.push_back('s');
     }
-
     return ret;
 }
 
