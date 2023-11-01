@@ -179,7 +179,7 @@ int main() {
                         resp["variants"].push_back(json_variant);
                     }
 
-                    return pw::HTTPResponse(200, resp.dump(), {{"Content-Type", "application/json"}});
+                    return pw::HTTPResponse(200, resp.dump(4), {{"Content-Type", "application/json"}});
                 } else {
                     return pw::HTTPResponse::make_basic(404);
                 }
