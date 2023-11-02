@@ -397,7 +397,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Participle::english_equivalent(const std::string& english_base) const {
-    static constexpr const char* prefixes[7] = {
+    static constexpr const char* prefixes[5] = {
         nullptr,
         "of ",
         "to/for ",
@@ -540,7 +540,7 @@ WordInfo query_whitakers_words(const std::string& word) {
         std::string split_word;
         ss >> split_word;
         split_word.erase(std::remove_if(split_word.begin(), split_word.end(), ispunct), split_word.end());
-        if (!ret.variants.empty() && split_word != ascii_word) { // Variants have ended and definitions have begun
+        if (!ret.variants.empty() && !pw::string::iequals(split_word, ascii_word)) { // Variants have ended and definitions have begun
             ss.seekg(0);
             for (char c; ss.get(c) && !ispunct(c);) {
                 ret.english_base.push_back(c);
