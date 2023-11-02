@@ -24,6 +24,8 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
         "of ",
         "to/for ",
         nullptr,
+        nullptr,
+        "O ",
     };
 
     std::string ret;
