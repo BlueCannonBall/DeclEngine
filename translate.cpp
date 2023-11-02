@@ -494,7 +494,7 @@ std::string Adverb::english_equivalent(const std::string& english_base) const {
         }
 
         return ret;
-    } else if (!pw::string::ends_with(english_base, "ly")) {
+    } else if (!pw::string::ends_with(english_base, "ly") && english_base.back() != 'l') {
         if (english_base.back() == 'y') {
             return english_base.substr(0, english_base.size() - 1) + "ily";
         } else {
