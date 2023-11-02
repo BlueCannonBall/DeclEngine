@@ -490,36 +490,37 @@ std::string remove_accents(const std::string& str) {
     return ret;
 }
 
-WordInfo query_whitakers_words(const std::string& word) {
+int query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret) {
     std::string ascii_word = remove_accents(word);
 
     boost::process::ipstream out;
     boost::process::child words("bin/words", ascii_word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out);
 
-    WordInfo ret;
-
-    for (; out;) {
+    for (WordInfo word_info; out;) {
         std::string line;
         std::getline(out, line, '\n');
         pw::string::trim_right(line);
         std::istringstream ss(line);
         if (line == "Two words" ||
             pw::string::ends_with(line, "UNKNOWN")) {
-            break;
-        } else if (line.front() == ' ') {
+            return 1;
+        } else if (line.front() == ' ' || line.front() == '-') {
             continue;
         }
 
         std::string split_word;
         ss >> split_word;
         split_word.erase(std::remove_if(split_word.begin(), split_word.end(), ispunct), split_word.end());
-        if (!ret.variants.empty() && !pw::string::iequals(split_word, ascii_word)) { // Variants have ended and definitions have begun
-            ss.seekg(0);
-            for (char c; ss.get(c) && !ispunct(c);) {
-                ret.english_base.push_back(c);
+        if (!pw::string::iequals(split_word, ascii_word)) {
+            if (!word_info.variants.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
+                ss.seekg(0);
+                for (char c; ss.get(c) && !ispunct(c);) {
+                    word_info.english_base.push_back(c);
+                }
+                pw::string::trim_right(word_info.english_base);
+                ret.push_back(std::move(word_info));
             }
-            pw::string::trim_right(ret.english_base);
-            break;
+            continue;
         }
 
         std::string string_part_of_speech;
@@ -560,7 +561,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             default: throw std::runtime_error("Invalid gender");
             }
 
-            ret.variants.push_back(std::make_unique<Noun>(declension, casus, plural, gender));
+            word_info.variants.push_back(std::make_unique<Noun>(declension, casus, plural, gender));
             break;
         }
 
@@ -611,7 +612,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             // Parse plurality
             bool plural = char_plurality == 'P';
 
-            ret.variants.push_back(std::make_unique<Verb>(conjugation, tense, voice, mood, person, plural));
+            word_info.variants.push_back(std::make_unique<Verb>(conjugation, tense, voice, mood, person, plural));
             break;
         }
 
@@ -671,7 +672,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             case hash("PASSIVE"): voice = VOICE_PASSIVE; break;
             }
 
-            ret.variants.push_back(std::make_unique<Participle>(conjugation, casus, plural, gender, tense, voice));
+            word_info.variants.push_back(std::make_unique<Participle>(conjugation, casus, plural, gender, tense, voice));
             break;
         }
 
@@ -709,7 +710,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             default: throw std::runtime_error("Invalid gender");
             }
 
-            ret.variants.push_back(std::make_unique<Supine>(conjugation, casus, plural, gender));
+            word_info.variants.push_back(std::make_unique<Supine>(conjugation, casus, plural, gender));
             break;
         }
 
@@ -757,7 +758,7 @@ WordInfo query_whitakers_words(const std::string& word) {
             default: throw std::runtime_error("Invalid degree of comparison");
             }
 
-            ret.variants.push_back(std::make_unique<Adjective>(declension, casus, plural, gender, degree));
+            word_info.variants.push_back(std::make_unique<Adjective>(declension, casus, plural, gender, degree));
             break;
         }
 
@@ -774,11 +775,11 @@ WordInfo query_whitakers_words(const std::string& word) {
             default: throw std::runtime_error("Invalid degree of comparison");
             }
 
-            ret.variants.push_back(std::make_unique<Adverb>(degree));
+            word_info.variants.push_back(std::make_unique<Adverb>(degree));
             break;
         }
         }
     }
 
-    return ret;
+    return 0;
 }
