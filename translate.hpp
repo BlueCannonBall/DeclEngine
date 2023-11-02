@@ -188,4 +188,4 @@ struct WordInfo {
 };
 
 std::string remove_accents(const std::string& str);
-int query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret);
+size_t query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret);
