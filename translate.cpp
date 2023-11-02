@@ -687,9 +687,9 @@ WordInfo query_whitakers_words(const std::string& word) {
             // Parse voice
             Voice voice;
             switch (hash(string_voice)) {
-            case hash("ACTIVE"): voice = VOICE_ACTIVE; break;
+            case hash("ACTIVE"):
+            default: voice = VOICE_ACTIVE; break;
             case hash("PASSIVE"): voice = VOICE_PASSIVE; break;
-            default: throw std::runtime_error("Invalid voice");
             }
 
             ret.variants.push_back(std::make_unique<Participle>(conjugation, casus, plural, gender, tense, voice));
