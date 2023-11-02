@@ -24,7 +24,6 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
         "of ",
         "to/for ",
         nullptr,
-        "by ",
     };
 
     std::string ret;
