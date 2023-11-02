@@ -73,193 +73,198 @@ int main() {
                     return pw::HTTPResponse::make_basic(400);
                 }
 
-                WordInfo word_info = query_whitakers_words(word_it->second);
-                if (word_info.is_valid()) {
-                    json resp = {
-                        {"variants", json::array()},
-                        {"english_base", word_info.english_base},
-                    };
+                std::vector<WordInfo> words;
+                if (query_whitakers_words(word_it->second, words) == 0) {
+                    json resp;
+                    for (const auto& word_info : words) {
+                        json json_word_info = {
+                            {"variants", json::array()},
+                            {"english_base", word_info.english_base},
+                        };
 
-                    for (const auto& variant : word_info.variants) {
-                        json json_variant;
+                        for (const auto& variant : word_info.variants) {
+                            json json_variant;
 
-                        switch (variant->part_of_speech) {
-                        case PART_OF_SPEECH_NOUN: {
-                            json_variant["part_of_speech"] = "noun";
-                            auto noun = (Noun*) variant.get();
+                            switch (variant->part_of_speech) {
+                            case PART_OF_SPEECH_NOUN: {
+                                json_variant["part_of_speech"] = "noun";
+                                auto noun = (Noun*) variant.get();
 
-                            switch (noun->casus) {
-                            case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
-                            case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
-                            case CASUS_DATIVE: json_variant["case"] = "dative"; break;
-                            case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
-                            case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
-                            case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
-                            case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
+                                switch (noun->casus) {
+                                case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
+                                case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
+                                case CASUS_DATIVE: json_variant["case"] = "dative"; break;
+                                case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
+                                case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
+                                case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
+                                case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
+                                }
+
+                                json_variant["plural"] = noun->plural;
+
+                                switch (noun->gender) {
+                                case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
+                                case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
+                                case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                                case GENDER_COMMON: json_variant["gender"] = "common"; break;
+                                }
+
+                                break;
                             }
 
-                            json_variant["plural"] = noun->plural;
+                            case PART_OF_SPEECH_VERB: {
+                                json_variant["part_of_speech"] = "verb";
+                                auto verb = (Verb*) variant.get();
 
-                            switch (noun->gender) {
-                            case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
-                            case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
-                            case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
-                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
+                                json_variant["conjugation"] = verb->conjugation;
+
+                                switch (verb->tense) {
+                                case TENSE_PRESENT: json_variant["tense"] = "present"; break;
+                                case TENSE_IMPERFECT: json_variant["tense"] = "imperfect"; break;
+                                case TENSE_PERFECT: json_variant["tense"] = "perfect"; break;
+                                case TENSE_PLUPERFECT: json_variant["tense"] = "pluperfect"; break;
+                                case TENSE_FUTURE: json_variant["tense"] = "future"; break;
+                                case TENSE_FUTURE_PERFECT: json_variant["tense"] = "future_perfect"; break;
+                                }
+
+                                switch (verb->voice) {
+                                case VOICE_ACTIVE: json_variant["voice"] = "active"; break;
+                                case VOICE_PASSIVE: json_variant["voice"] = "passive"; break;
+                                }
+
+                                switch (verb->mood) {
+                                case MOOD_INDICATIVE: json_variant["mood"] = "indicative"; break;
+                                case MOOD_SUBJUNCTIVE: json_variant["mood"] = "subjunctive"; break;
+                                case MOOD_IMPERATIVE: json_variant["mood"] = "imperative"; break;
+                                case MOOD_INFINITIVE: json_variant["mood"] = "infinitive"; break;
+                                }
+
+                                json_variant["plural"] = verb->plural;
+
+                                break;
                             }
 
-                            break;
+                            case PART_OF_SPEECH_PARTICIPLE: {
+                                json_variant["part_of_speech"] = "participle";
+                                auto participle = (Participle*) variant.get();
+
+                                json_variant["conjugation"] = participle->conjugation;
+
+                                switch (participle->casus) {
+                                case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
+                                case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
+                                case CASUS_DATIVE: json_variant["case"] = "dative"; break;
+                                case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
+                                case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
+                                case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
+                                case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
+                                }
+
+                                json_variant["plural"] = participle->plural;
+
+                                switch (participle->gender) {
+                                case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
+                                case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
+                                case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                                case GENDER_COMMON: json_variant["gender"] = "common"; break;
+                                }
+
+                                switch (participle->tense) {
+                                case TENSE_PRESENT: json_variant["tense"] = "present"; break;
+                                case TENSE_IMPERFECT: json_variant["tense"] = "imperfect"; break;
+                                case TENSE_PERFECT: json_variant["tense"] = "perfect"; break;
+                                case TENSE_PLUPERFECT: json_variant["tense"] = "pluperfect"; break;
+                                case TENSE_FUTURE: json_variant["tense"] = "future"; break;
+                                case TENSE_FUTURE_PERFECT: json_variant["tense"] = "future_perfect"; break;
+                                }
+
+                                switch (participle->voice) {
+                                case VOICE_ACTIVE: json_variant["voice"] = "active"; break;
+                                case VOICE_PASSIVE: json_variant["voice"] = "passive"; break;
+                                }
+
+                                break;
+                            }
+
+                            case PART_OF_SPEECH_SUPINE: {
+                                json_variant["part_of_speech"] = "supine";
+                                auto supine = (Supine*) variant.get();
+
+                                json_variant["conjugation"] = supine->conjugation;
+
+                                switch (supine->casus) {
+                                case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
+                                case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
+                                case CASUS_DATIVE: json_variant["case"] = "dative"; break;
+                                case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
+                                case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
+                                case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
+                                case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
+                                }
+
+                                json_variant["plural"] = supine->plural;
+
+                                switch (supine->gender) {
+                                case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
+                                case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
+                                case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                                case GENDER_COMMON: json_variant["gender"] = "common"; break;
+                                }
+
+                                break;
+                            }
+
+                            case PART_OF_SPEECH_ADJECTIVE: {
+                                json_variant["part_of_speech"] = "adjective";
+                                auto adjective = (Adjective*) variant.get();
+
+                                switch (adjective->casus) {
+                                case CASUS_NOMINATIVE: json_variant["casus"] = "nominative"; break;
+                                case CASUS_GENITIVE: json_variant["casus"] = "genitive"; break;
+                                case CASUS_DATIVE: json_variant["casus"] = "dative"; break;
+                                case CASUS_ACCUSATIVE: json_variant["casus"] = "accusative"; break;
+                                case CASUS_ABLATIVE: json_variant["casus"] = "ablative"; break;
+                                case CASUS_VOCATIVE: json_variant["casus"] = "vocative"; break;
+                                case CASUS_LOCATIVE: json_variant["casus"] = "locative"; break;
+                                }
+
+                                json_variant["plural"] = adjective->plural;
+
+                                switch (adjective->gender) {
+                                case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
+                                case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
+                                case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
+                                case GENDER_COMMON: json_variant["gender"] = "common"; break;
+                                }
+
+                                switch (adjective->degree) {
+                                case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
+                                case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
+                                case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;
+                                }
+
+                                break;
+                            }
+
+                            case PART_OF_SPEECH_ADVERB: {
+                                json_variant["part_of_speech"] = "adverb";
+                                auto adverb = (Adverb*) variant.get();
+
+                                switch (adverb->degree) {
+                                case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
+                                case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
+                                case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;
+                                }
+
+                                break;
+                            }
+                            }
+
+                            json_variant["english_equivalent"] = variant->english_equivalent(word_info.english_base);
+                            json_word_info["variants"].push_back(json_variant);
                         }
 
-                        case PART_OF_SPEECH_VERB: {
-                            json_variant["part_of_speech"] = "verb";
-                            auto verb = (Verb*) variant.get();
-
-                            json_variant["conjugation"] = verb->conjugation;
-
-                            switch (verb->tense) {
-                            case TENSE_PRESENT: json_variant["tense"] = "present"; break;
-                            case TENSE_IMPERFECT: json_variant["tense"] = "imperfect"; break;
-                            case TENSE_PERFECT: json_variant["tense"] = "perfect"; break;
-                            case TENSE_PLUPERFECT: json_variant["tense"] = "pluperfect"; break;
-                            case TENSE_FUTURE: json_variant["tense"] = "future"; break;
-                            case TENSE_FUTURE_PERFECT: json_variant["tense"] = "future_perfect"; break;
-                            }
-
-                            switch (verb->voice) {
-                            case VOICE_ACTIVE: json_variant["voice"] = "active"; break;
-                            case VOICE_PASSIVE: json_variant["voice"] = "passive"; break;
-                            }
-
-                            switch (verb->mood) {
-                            case MOOD_INDICATIVE: json_variant["mood"] = "indicative"; break;
-                            case MOOD_SUBJUNCTIVE: json_variant["mood"] = "subjunctive"; break;
-                            case MOOD_IMPERATIVE: json_variant["mood"] = "imperative"; break;
-                            case MOOD_INFINITIVE: json_variant["mood"] = "infinitive"; break;
-                            }
-
-                            json_variant["plural"] = verb->plural;
-
-                            break;
-                        }
-
-                        case PART_OF_SPEECH_PARTICIPLE: {
-                            json_variant["part_of_speech"] = "participle";
-                            auto participle = (Participle*) variant.get();
-
-                            json_variant["conjugation"] = participle->conjugation;
-
-                            switch (participle->casus) {
-                            case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
-                            case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
-                            case CASUS_DATIVE: json_variant["case"] = "dative"; break;
-                            case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
-                            case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
-                            case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
-                            case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
-                            }
-
-                            json_variant["plural"] = participle->plural;
-
-                            switch (participle->gender) {
-                            case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
-                            case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
-                            case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
-                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
-                            }
-
-                            switch (participle->tense) {
-                            case TENSE_PRESENT: json_variant["tense"] = "present"; break;
-                            case TENSE_IMPERFECT: json_variant["tense"] = "imperfect"; break;
-                            case TENSE_PERFECT: json_variant["tense"] = "perfect"; break;
-                            case TENSE_PLUPERFECT: json_variant["tense"] = "pluperfect"; break;
-                            case TENSE_FUTURE: json_variant["tense"] = "future"; break;
-                            case TENSE_FUTURE_PERFECT: json_variant["tense"] = "future_perfect"; break;
-                            }
-
-                            switch (participle->voice) {
-                            case VOICE_ACTIVE: json_variant["voice"] = "active"; break;
-                            case VOICE_PASSIVE: json_variant["voice"] = "passive"; break;
-                            }
-
-                            break;
-                        }
-
-                        case PART_OF_SPEECH_SUPINE: {
-                            json_variant["part_of_speech"] = "supine";
-                            auto supine = (Supine*) variant.get();
-
-                            json_variant["conjugation"] = supine->conjugation;
-
-                            switch (supine->casus) {
-                            case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
-                            case CASUS_GENITIVE: json_variant["case"] = "genitive"; break;
-                            case CASUS_DATIVE: json_variant["case"] = "dative"; break;
-                            case CASUS_ACCUSATIVE: json_variant["case"] = "accusative"; break;
-                            case CASUS_ABLATIVE: json_variant["case"] = "ablative"; break;
-                            case CASUS_VOCATIVE: json_variant["case"] = "vocative"; break;
-                            case CASUS_LOCATIVE: json_variant["case"] = "locative"; break;
-                            }
-
-                            json_variant["plural"] = supine->plural;
-
-                            switch (supine->gender) {
-                            case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
-                            case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
-                            case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
-                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
-                            }
-
-                            break;
-                        }
-
-                        case PART_OF_SPEECH_ADJECTIVE: {
-                            json_variant["part_of_speech"] = "adjective";
-                            auto adjective = (Adjective*) variant.get();
-
-                            switch (adjective->casus) {
-                            case CASUS_NOMINATIVE: json_variant["casus"] = "nominative"; break;
-                            case CASUS_GENITIVE: json_variant["casus"] = "genitive"; break;
-                            case CASUS_DATIVE: json_variant["casus"] = "dative"; break;
-                            case CASUS_ACCUSATIVE: json_variant["casus"] = "accusative"; break;
-                            case CASUS_ABLATIVE: json_variant["casus"] = "ablative"; break;
-                            case CASUS_VOCATIVE: json_variant["casus"] = "vocative"; break;
-                            case CASUS_LOCATIVE: json_variant["casus"] = "locative"; break;
-                            }
-
-                            json_variant["plural"] = adjective->plural;
-
-                            switch (adjective->gender) {
-                            case GENDER_MASCULINE: json_variant["gender"] = "masculine"; break;
-                            case GENDER_FEMININE: json_variant["gender"] = "feminine"; break;
-                            case GENDER_NEUTER: json_variant["gender"] = "neuter"; break;
-                            case GENDER_COMMON: json_variant["gender"] = "common"; break;
-                            }
-
-                            switch (adjective->degree) {
-                            case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
-                            case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
-                            case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;
-                            }
-
-                            break;
-                        }
-
-                        case PART_OF_SPEECH_ADVERB: {
-                            json_variant["part_of_speech"] = "adverb";
-                            auto adverb = (Adverb*) variant.get();
-
-                            switch (adverb->degree) {
-                            case DEGREE_POSITIVE: json_variant["degree"] = "positive"; break;
-                            case DEGREE_COMPARATIVE: json_variant["degree"] = "comparative"; break;
-                            case DEGREE_SUPERLATIVE: json_variant["degree"] = "superlative"; break;
-                            }
-
-                            break;
-                        }
-                        }
-
-                        json_variant["english_equivalent"] = variant->english_equivalent(word_info.english_base);
-                        resp["variants"].push_back(json_variant);
+                        resp.push_back(json_word_info);
                     }
 
                     return pw::HTTPResponse(200, resp.dump(4), {{"Content-Type", "application/json"}});
