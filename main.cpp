@@ -42,7 +42,7 @@ int main() {
                 "USE_SUFFIXES                      Y\n"
                 "USE_TACKONS                       Y\n"
                 "DO_MEDIEVAL_TRICKS                Y\n"
-                "DO_SYNCOPE                        Y\n"
+                "DO_SYNCOPE                        N\n"
                 "DO_TWO_WORDS                      N\n"
                 "INCLUDE_UNKNOWN_CONTEXT           Y\n"
                 "NO_MEANINGS                       N\n"
