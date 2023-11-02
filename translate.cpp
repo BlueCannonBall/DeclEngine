@@ -37,16 +37,14 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
 
     if (plural) {
         switch (ret.back()) {
+        case 'y':
+            ret.back() = 'i';
         case 'a':
         case 'i':
         case 'o':
         case 'u':
+        case 'h':
         case 's':
-            ret.push_back('e');
-            break;
-
-        case 'y':
-            ret.back() = 'i';
             ret.push_back('e');
             break;
         }
@@ -431,39 +429,20 @@ std::string Supine::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Adjective::english_equivalent(const std::string& english_base) const {
-    if (degree) {
-        switch (degree) {
-        case DEGREE_COMPARATIVE:
-            if (english_base.back() == 'e') {
-                return english_base + 'r';
-            } else {
-                return english_base + "er";
-            }
-
-        case DEGREE_SUPERLATIVE:
-            return "most-" + english_base;
-
-        default:
-            throw std::logic_error("Invalid degree of comparison");
+    switch (degree) {
+    case DEGREE_COMPARATIVE:
+        if (english_base.back() == 'e') {
+            return english_base + 'r';
+        } else {
+            return english_base + "er";
         }
-    } else if (plural) {
-        std::string ret;
-        switch (english_base.back()) {
-        case 'y':
-            ret.back() = 'i';
-        case 'a':
-        case 'i':
-        case 'o':
-        case 'u':
-        case 's':
-            ret.push_back('e');
-            break;
-        }
-        ret.push_back('s');
-        return ret;
+
+    case DEGREE_SUPERLATIVE:
+        return "most-" + english_base;
+
+    default:
+        return english_base;
     }
-
-    return english_base;
 }
 
 std::string Adverb::english_equivalent(const std::string& english_base) const {
