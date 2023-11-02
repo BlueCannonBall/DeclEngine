@@ -490,7 +490,7 @@ std::string remove_accents(const std::string& str) {
     return ret;
 }
 
-int query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret) {
+size_t query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret) {
     std::string ascii_word = remove_accents(word);
 
     boost::process::ipstream out;
@@ -503,7 +503,7 @@ int query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret) {
         std::istringstream ss(line);
         if (line == "Two words" ||
             pw::string::ends_with(line, "UNKNOWN")) {
-            return 1;
+            return 0;
         } else if (line.front() == ' ' || line.front() == '-') {
             continue;
         }
@@ -781,5 +781,5 @@ int query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret) {
         }
     }
 
-    return 0;
+    return ret.size();
 }
