@@ -397,7 +397,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Participle::english_equivalent(const std::string& english_base) const {
-    static constexpr const char* prefixes[5] = {
+    static constexpr const char* prefixes[7] = {
         nullptr,
         "of ",
         "to/for ",
