@@ -3,7 +3,7 @@ CXXFLAGS = -Wall -std=c++14 -O3 -pthread
 LDLIBS = -lcrypto -licuuc -licui18n
 HEADERS = $(shell find . -name "*.hpp")
 OBJDIR = obj
-OBJS = $(OBJDIR)/main.o $(OBJDIR)/translate.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polyweb_string.o
+OBJS = $(OBJDIR)/main.o $(OBJDIR)/dictionary.o $(OBJDIR)/translate.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polyweb_string.o
 PREFIX = /usr/local
 TARGET = declengine
 
@@ -14,7 +14,11 @@ $(OBJDIR)/main.o: main.cpp $(HEADERS)
 	mkdir -p $(OBJDIR)
 	$(CXX) -c $< $(CXXFLAGS) -o $@
 
-$(OBJDIR)/translate.o: translate.cpp translate.hpp Polyweb/string.hpp
+$(OBJDIR)/dictionary.o: dictionary.cpp dictionary.hpp words.hpp Polyweb/string.hpp
+	mkdir -p $(OBJDIR)
+	$(CXX) -c $< $(CXXFLAGS) -o $@
+
+$(OBJDIR)/translate.o: translate.cpp words.hpp Polyweb/string.hpp
 	mkdir -p $(OBJDIR)
 	$(CXX) -c $< $(CXXFLAGS) -o $@
 

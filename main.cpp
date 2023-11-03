@@ -1,6 +1,7 @@
 #include "Polyweb/polyweb.hpp"
+#include "dictionary.hpp"
 #include "json.hpp"
-#include "translate.hpp"
+#include "words.hpp"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -74,7 +75,7 @@ int main() {
                 }
 
                 std::vector<WordInfo> words;
-                if (query_whitakers_words(word_it->second, words)) {
+                if (query_dictionary(word_it->second, words)) {
                     json resp;
                     for (const auto& word_info : words) {
                         json json_word_info = {

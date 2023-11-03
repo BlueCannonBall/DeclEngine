@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
 #include <string>
-#include <vector>
 
 enum PartOfSpeech {
     PART_OF_SPEECH_NOUN,
@@ -177,15 +175,3 @@ public:
 
     std::string english_equivalent(const std::string& english_base) const override;
 };
-
-struct WordInfo {
-    std::vector<std::unique_ptr<WordVariant>> variants;
-    std::string english_base;
-
-    bool is_valid() const {
-        return !variants.empty();
-    }
-};
-
-std::string remove_accents(const std::string& str);
-size_t query_whitakers_words(const std::string& word, std::vector<WordInfo>& ret);
