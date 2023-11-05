@@ -376,6 +376,37 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             word_info.variants.push_back(std::make_shared<Adverb>(degree));
             break;
         }
+
+        case hash("CONJ"): {
+            word_info.variants.push_back(std::make_shared<Conjunction>());
+            break;
+        }
+
+        case hash("PREP"): {
+            std::string string_case;
+            ss >> string_case;
+
+            // Parse case
+            Casus casus;
+            switch (hash(string_case)) {
+            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("GEN"): casus = CASUS_GENITIVE; break;
+            case hash("DAT"): casus = CASUS_DATIVE; break;
+            case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
+            case hash("ABL"): casus = CASUS_ABLATIVE; break;
+            case hash("VOC"): casus = CASUS_VOCATIVE; break;
+            case hash("LOC"): casus = CASUS_LOCATIVE; break;
+            default: throw std::runtime_error("Invalid case");
+            }
+
+            word_info.variants.push_back(std::make_shared<Preposition>(casus));
+            break;
+        }
+
+        case hash("INTERJ"): {
+            word_info.variants.push_back(std::make_shared<Interjection>());
+            break;
+        }
         }
     }
 
