@@ -473,7 +473,7 @@ std::string Adverb::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Pronoun::english_equivalent(const std::string& english_base) const {
-    static constexpr const char* english_equivalents[5][4][2] = {
+    static constexpr const char* he[5][4][2] = {
         // Nominative case
         {
             {"he", "they"},
@@ -510,11 +510,56 @@ std::string Pronoun::english_equivalent(const std::string& english_base) const {
             {"them", "them"},
         },
     };
+    static constexpr const char* himself[5][4][2] = {
+        // Nominative case
+        {
+            {"himself", "themselves"},
+            {"herself", "themselves"},
+            {"itself", "themselves"},
+            {"themself", "themselves"},
+        },
+        // Genitive case
+        {
+            {"of himself", "of themselves"},
+            {"of herself", "of themselves"},
+            {"of itself", "of themselves"},
+            {"of themself", "of themselves"},
+        },
+        // Dative case
+        {
+            {"to/for himself", "to/for themselves"},
+            {"to/for herself", "to/for themselves"},
+            {"to/for itself", "to/for themselves"},
+            {"to/for themself", "to/for themselves"},
+        },
+        // Accusative case
+        {
+            {"himself", "themselves"},
+            {"herself", "themselves"},
+            {"itself", "themselves"},
+            {"themself", "themselves"},
+        },
+        // Ablative case
+        {
+            {"himself", "themselves"},
+            {"herself", "themselves"},
+            {"itself", "themselves"},
+            {"themself", "themselves"},
+        },
+    };
 
-    if (english_base == "he" && declension == 4) {
-        if (english_equivalents[casus][gender][plural]) {
-            return english_equivalents[casus][gender][plural];
+    switch (declension) {
+    case 4:
+        if (english_base == "he" && he[casus][gender][plural]) {
+            return he[casus][gender][plural];
         }
+        break;
+
+    case 6:
+        if (english_base == "himself" && himself[casus][gender][plural]) {
+            return himself[casus][gender][plural];
+        }
+        break;
     }
 
     return Noun::english_equivalent(english_base);
