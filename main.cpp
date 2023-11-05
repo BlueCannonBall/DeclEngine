@@ -125,8 +125,6 @@ int main() {
                                 json_variant["part_of_speech"] = "verb";
                                 auto verb = (Verb*) variant.get();
 
-                                json_variant["conjugation"] = verb->conjugation;
-
                                 switch (verb->tense) {
                                 case TENSE_PRESENT: json_variant["tense"] = "present"; break;
                                 case TENSE_IMPERFECT: json_variant["tense"] = "imperfect"; break;
@@ -156,8 +154,6 @@ int main() {
                             case PART_OF_SPEECH_PARTICIPLE: {
                                 json_variant["part_of_speech"] = "participle";
                                 auto participle = (Participle*) variant.get();
-
-                                json_variant["conjugation"] = participle->conjugation;
 
                                 switch (participle->casus) {
                                 case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
@@ -198,8 +194,6 @@ int main() {
                             case PART_OF_SPEECH_SUPINE: {
                                 json_variant["part_of_speech"] = "supine";
                                 auto supine = (Supine*) variant.get();
-
-                                json_variant["conjugation"] = supine->conjugation;
 
                                 switch (supine->casus) {
                                 case CASUS_NOMINATIVE: json_variant["case"] = "nominative"; break;
