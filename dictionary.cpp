@@ -79,6 +79,13 @@ std::string remove_accents(const std::string& str) {
 
 size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
     std::string ascii_word = remove_accents(word);
+    for (char& c : ascii_word) { // Remove J
+        if (c == 'j') {
+            c = 'i';
+        } else if (c == 'J') {
+            c = 'I';
+        }
+    }
 
     boost::process::ipstream out;
     boost::process::child words("bin/words", ascii_word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out);
