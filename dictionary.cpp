@@ -45,17 +45,6 @@ const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, Case
             .english_base = "rapidly",
         },
     },
-    {
-        "lacrimare",
-        {
-            .variants = {
-                std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_ACTIVE, MOOD_INFINITIVE, 0, false),
-                std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_PASSIVE, MOOD_INDICATIVE, 1, false),
-                std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_PASSIVE, MOOD_IMPERATIVE, 1, false),
-            },
-            .english_base = "cry",
-        },
-    },
 };
 
 std::string remove_accents(const std::string& str) {
@@ -166,11 +155,11 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
         case hash("V"): {
             Conjugation conjugation;
             std::string string_tense;
-            std::string string_voice;
+            std::string string_voice_or_mood;
             std::string string_mood;
             Person person;
             char char_plurality;
-            ss >> conjugation >> unknown >> string_tense >> string_voice >> string_mood >> person >> char_plurality;
+            ss >> conjugation >> unknown >> string_tense >> string_voice_or_mood;
 
             // Parse tense
             Tense tense;
@@ -186,10 +175,22 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
 
             // Parse voice
             Voice voice;
-            switch (hash(string_voice)) {
-            case hash("ACTIVE"): voice = VOICE_ACTIVE; break;
-            case hash("PASSIVE"): voice = VOICE_PASSIVE; break;
-            default: throw std::runtime_error("Invalid voice");
+            switch (hash(string_voice_or_mood)) {
+            case hash("ACTIVE"):
+                voice = VOICE_ACTIVE;
+                ss >> string_mood >> person >> char_plurality;
+                break;
+
+            case hash("PASSIVE"):
+                voice = VOICE_PASSIVE;
+                ss >> string_mood >> person >> char_plurality;
+                break;
+
+            default:
+                voice = VOICE_ACTIVE;
+                string_mood = std::move(string_voice_or_mood);
+                ss >> person >> char_plurality;
+                break;
             }
 
             // Parse mood
