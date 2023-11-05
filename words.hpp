@@ -10,6 +10,9 @@ enum PartOfSpeech {
     PART_OF_SPEECH_ADJECTIVE,
     PART_OF_SPEECH_ADVERB,
     PART_OF_SPEECH_PRONOUN,
+    PART_OF_SPEECH_CONJUNCTION,
+    PART_OF_SPEECH_PREPOSITION,
+    PART_OF_SPEECH_INTERJECTION,
 };
 
 enum Casus {
@@ -78,7 +81,7 @@ public:
     bool plural;
     Gender gender;
 
-    Noun(PartOfSpeech part_of_speech):
+    Noun(PartOfSpeech part_of_speech = PART_OF_SPEECH_NOUN):
         WordVariant(part_of_speech) {}
     Noun(Declension declension, Casus casus, bool plural, Gender gender):
         WordVariant(PART_OF_SPEECH_NOUN),
@@ -99,7 +102,7 @@ public:
     Person person;
     bool plural;
 
-    Verb(PartOfSpeech part_of_speech):
+    Verb(PartOfSpeech part_of_speech = PART_OF_SPEECH_VERB):
         WordVariant(part_of_speech) {}
     Verb(Conjugation conjugation, Tense tense, Voice voice, Mood mood, Person person, bool plural):
         WordVariant(PART_OF_SPEECH_VERB),
@@ -122,7 +125,7 @@ public:
     Tense tense;
     Voice voice;
 
-    Participle(PartOfSpeech part_of_speech):
+    Participle(PartOfSpeech part_of_speech = PART_OF_SPEECH_PARTICIPLE):
         WordVariant(part_of_speech) {}
     Participle(Conjugation conjugation, Casus casus, bool plural, Gender gender, Tense tense, Voice voice):
         WordVariant(PART_OF_SPEECH_PARTICIPLE),
@@ -143,7 +146,7 @@ public:
     bool plural;
     Gender gender;
 
-    Supine(PartOfSpeech part_of_speech):
+    Supine(PartOfSpeech part_of_speech = PART_OF_SPEECH_SUPINE):
         WordVariant(part_of_speech) {}
     Supine(Conjugation conjugation, Casus casus, bool plural, Gender gender):
         WordVariant(PART_OF_SPEECH_SUPINE),
@@ -163,7 +166,7 @@ public:
     Gender gender;
     Degree degree;
 
-    Adjective(PartOfSpeech part_of_speech):
+    Adjective(PartOfSpeech part_of_speech = PART_OF_SPEECH_ADJECTIVE):
         WordVariant(part_of_speech) {}
     Adjective(Declension declension, Casus casus, bool plural, Gender gender, Degree degree):
         WordVariant(PART_OF_SPEECH_ADJECTIVE),
@@ -180,7 +183,7 @@ class Adverb : public WordVariant {
 public:
     Degree degree;
 
-    Adverb(PartOfSpeech part_of_speech):
+    Adverb(PartOfSpeech part_of_speech = PART_OF_SPEECH_ADVERB):
         WordVariant(part_of_speech) {}
     Adverb(Degree degree):
         WordVariant(PART_OF_SPEECH_ADVERB),
@@ -191,7 +194,7 @@ public:
 
 class Pronoun : public Noun {
 public:
-    Pronoun(PartOfSpeech part_of_speech):
+    Pronoun(PartOfSpeech part_of_speech = PART_OF_SPEECH_PRONOUN):
         Noun(part_of_speech) {}
     Pronoun(Declension declension, Casus casus, bool plural, Gender gender):
         Noun(declension, casus, plural, gender) {
@@ -199,4 +202,39 @@ public:
     }
 
     std::string english_equivalent(const std::string& english_base) const override;
+};
+
+class Conjunction : public WordVariant {
+public:
+    Conjunction(PartOfSpeech part_of_speech = PART_OF_SPEECH_CONJUNCTION):
+        WordVariant(part_of_speech) {}
+
+    inline std::string english_equivalent(const std::string& english_base) const override {
+        return english_base;
+    }
+};
+
+class Preposition : public WordVariant {
+public:
+    Casus casus;
+
+    Preposition(PartOfSpeech part_of_speech = PART_OF_SPEECH_PREPOSITION):
+        WordVariant(part_of_speech) {}
+    Preposition(Casus casus):
+        WordVariant(PART_OF_SPEECH_PREPOSITION),
+        casus(casus) {}
+
+    inline std::string english_equivalent(const std::string& english_base) const override {
+        return english_base;
+    }
+};
+
+class Interjection : public WordVariant {
+public:
+    Interjection(PartOfSpeech part_of_speech = PART_OF_SPEECH_INTERJECTION):
+        WordVariant(part_of_speech) {}
+
+    inline std::string english_equivalent(const std::string& english_base) const override {
+        return english_base;
+    }
 };
