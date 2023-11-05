@@ -9,6 +9,7 @@ enum PartOfSpeech {
     PART_OF_SPEECH_SUPINE,
     PART_OF_SPEECH_ADJECTIVE,
     PART_OF_SPEECH_ADVERB,
+    PART_OF_SPEECH_PRONOUN,
 };
 
 enum Casus {
@@ -77,6 +78,8 @@ public:
     bool plural;
     Gender gender;
 
+    Noun(PartOfSpeech part_of_speech):
+        WordVariant(part_of_speech) {}
     Noun(Declension declension, Casus casus, bool plural, Gender gender):
         WordVariant(PART_OF_SPEECH_NOUN),
         declension(declension),
@@ -96,6 +99,8 @@ public:
     Person person;
     bool plural;
 
+    Verb(PartOfSpeech part_of_speech):
+        WordVariant(part_of_speech) {}
     Verb(Conjugation conjugation, Tense tense, Voice voice, Mood mood, Person person, bool plural):
         WordVariant(PART_OF_SPEECH_VERB),
         conjugation(conjugation),
@@ -117,6 +122,8 @@ public:
     Tense tense;
     Voice voice;
 
+    Participle(PartOfSpeech part_of_speech):
+        WordVariant(part_of_speech) {}
     Participle(Conjugation conjugation, Casus casus, bool plural, Gender gender, Tense tense, Voice voice):
         WordVariant(PART_OF_SPEECH_PARTICIPLE),
         conjugation(conjugation),
@@ -136,6 +143,8 @@ public:
     bool plural;
     Gender gender;
 
+    Supine(PartOfSpeech part_of_speech):
+        WordVariant(part_of_speech) {}
     Supine(Conjugation conjugation, Casus casus, bool plural, Gender gender):
         WordVariant(PART_OF_SPEECH_SUPINE),
         conjugation(conjugation),
@@ -154,6 +163,8 @@ public:
     Gender gender;
     Degree degree;
 
+    Adjective(PartOfSpeech part_of_speech):
+        WordVariant(part_of_speech) {}
     Adjective(Declension declension, Casus casus, bool plural, Gender gender, Degree degree):
         WordVariant(PART_OF_SPEECH_ADJECTIVE),
         declension(declension),
@@ -169,9 +180,23 @@ class Adverb : public WordVariant {
 public:
     Degree degree;
 
+    Adverb(PartOfSpeech part_of_speech):
+        WordVariant(part_of_speech) {}
     Adverb(Degree degree):
         WordVariant(PART_OF_SPEECH_ADVERB),
         degree(degree) {}
+
+    std::string english_equivalent(const std::string& english_base) const override;
+};
+
+class Pronoun : public Noun {
+public:
+    Pronoun(PartOfSpeech part_of_speech):
+        Noun(part_of_speech) {}
+    Pronoun(Declension declension, Casus casus, bool plural, Gender gender):
+        Noun(declension, casus, plural, gender) {
+        part_of_speech = PART_OF_SPEECH_PRONOUN;
+    }
 
     std::string english_equivalent(const std::string& english_base) const override;
 };

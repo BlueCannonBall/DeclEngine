@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <boost/process.hpp>
 #include <cctype>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <unicode/translit.h>
@@ -23,27 +24,38 @@ struct CaseInsensitiveHasher {
     }
 };
 
+// These dictionary entries are some of my own, and when any are found for a given word, they take precedence over all of Whitaker's entries
+// Some of these exist because I disagree with Whitaker's definitions, and others exist because some of Whitaker's entries are unparseable
 const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, CaseInsensitiveComparer> internal_dictionary = {
-    {"rapide", {
-        .variants = {
-            std::make_shared<Adjective>(1, CASUS_VOCATIVE, false, GENDER_MASCULINE, DEGREE_POSITIVE),
+    {
+        "rapide",
+        {
+            .variants = {
+                std::make_shared<Adjective>(1, CASUS_VOCATIVE, false, GENDER_MASCULINE, DEGREE_POSITIVE),
+            },
+            .english_base = "rapid",
         },
-        .english_base = "rapid",
-    }},
-    {"rapide", {
-        .variants = {
-            std::make_shared<Adverb>(DEGREE_POSITIVE),
+    },
+    {
+        "rapide",
+        {
+            .variants = {
+                std::make_shared<Adverb>(DEGREE_POSITIVE),
+            },
+            .english_base = "rapidly",
         },
-        .english_base = "rapidly",
-    }},
-    {"lacrimare", {
-        .variants = {
-            std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_ACTIVE, MOOD_INFINITIVE, 0, false),
-            std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_PASSIVE, MOOD_INDICATIVE, 1, false),
-            std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_PASSIVE, MOOD_IMPERATIVE, 1, false),
+    },
+    {
+        "lacrimare",
+        {
+            .variants = {
+                std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_ACTIVE, MOOD_INFINITIVE, 0, false),
+                std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_PASSIVE, MOOD_INDICATIVE, 1, false),
+                std::make_shared<Verb>(1, TENSE_PRESENT, VOICE_PASSIVE, MOOD_IMPERATIVE, 1, false),
+            },
+            .english_base = "cry",
         },
-        .english_base = "cry",
-    }},
+    },
 };
 
 std::string remove_accents(const std::string& str) {
@@ -66,9 +78,9 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
 
     auto range = internal_dictionary.equal_range(ascii_word);
     if (range.first != range.second) {
-        for (auto it = range.first; it != range.second; ++it) {
-            ret.push_back(it->second);
-        }
+        std::transform(range.first, range.second, std::back_inserter(ret), [](const auto& entry) {
+            return entry.second;
+        });
         return ret.size();
     }
 
@@ -93,8 +105,11 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
                 for (char c; ss.get(c) && !ispunct(c);) {
                     word_info.english_base.push_back(c);
                 }
+
                 pw::string::trim_right(word_info.english_base);
-                ret.push_back(std::move(word_info));
+                if (!word_info.english_base.empty()) {
+                    ret.push_back(std::move(word_info));
+                }
             }
             continue;
         }
@@ -103,7 +118,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
         ss >> string_part_of_speech;
         int unknown;
         switch (hash(string_part_of_speech)) {
-        case hash("N"): {
+        case hash("N"):
+        case hash("PRON"): {
             Declension declension;
             std::string string_case;
             char char_plurality;
@@ -137,7 +153,13 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             default: throw std::runtime_error("Invalid gender");
             }
 
-            word_info.variants.push_back(std::make_shared<Noun>(declension, casus, plural, gender));
+            if (string_part_of_speech == "N") {
+                word_info.variants.push_back(std::make_shared<Noun>(declension, casus, plural, gender));
+            } else if (string_part_of_speech == "PRON") {
+                word_info.variants.push_back(std::make_shared<Pronoun>(declension, casus, plural, gender));
+            } else {
+                throw std::logic_error("Invalid part of speech");
+            }
             break;
         }
 

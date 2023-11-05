@@ -1,5 +1,5 @@
-#include "words.hpp"
 #include "Polyweb/string.hpp"
+#include "words.hpp"
 #include <stdexcept>
 
 std::string Noun::english_equivalent(const std::string& english_base) const {
@@ -14,11 +14,12 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
 
     std::string ret;
     if (prefixes[casus]) {
-        ret = prefixes[casus] + english_base;
+        ret = prefixes[casus] + english_base; // Add prefix
     } else {
         ret = english_base;
     }
 
+    // Add suffix
     if (plural) {
         switch (ret.back()) {
         case 'y':
@@ -397,11 +398,12 @@ std::string Participle::english_equivalent(const std::string& english_base) cons
 
     std::string ret;
     if (prefixes[casus]) {
-        ret = prefixes[casus] + english_base;
+        ret = prefixes[casus] + english_base; // Add prefix
     } else {
         ret = english_base;
     }
 
+    // Add suffix
     if (ret.back() == 'e') {
         ret.back() = 'i';
         ret += "ng";
@@ -468,4 +470,52 @@ std::string Adverb::english_equivalent(const std::string& english_base) const {
     }
 
     return english_base;
+}
+
+std::string Pronoun::english_equivalent(const std::string& english_base) const {
+    static constexpr const char* english_equivalents[5][4][2] = {
+        // Nominative case
+        {
+            {"he", "they"},
+            {"she", "they"},
+            {"it", "they"},
+            {"they", "they"},
+        },
+        // Genitive case
+        {
+            {"of him", "of them"},
+            {"of her", "of them"},
+            {"of it", "of them"},
+            {"of them", "of them"},
+        },
+        // Dative case
+        {
+            {"to/for him", "to/for them"},
+            {"to/for her", "to/for them"},
+            {"to/for it", "to/for them"},
+            {"to/for them", "to/for them"},
+        },
+        // Accusative case
+        {
+            {"him", "them"},
+            {"her", "them"},
+            {"it", "them"},
+            {"them", "them"},
+        },
+        // Ablative case
+        {
+            {"him", "them"},
+            {"her", "them"},
+            {"it", "them"},
+            {"them", "them"},
+        },
+    };
+
+    if (english_base == "he" && declension == 4) {
+        if (english_equivalents[casus][gender][plural]) {
+            return english_equivalents[casus][gender][plural];
+        }
+    }
+
+    return Noun::english_equivalent(english_base);
 }
