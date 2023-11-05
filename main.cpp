@@ -4,6 +4,7 @@
 #include "words.hpp"
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 using nlohmann::json;
@@ -87,8 +88,15 @@ int main() {
                             json json_variant;
 
                             switch (variant->part_of_speech) {
-                            case PART_OF_SPEECH_NOUN: {
-                                json_variant["part_of_speech"] = "noun";
+                            case PART_OF_SPEECH_NOUN:
+                            case PART_OF_SPEECH_PRONOUN: {
+                                if (variant->part_of_speech == PART_OF_SPEECH_NOUN) {
+                                    json_variant["part_of_speech"] = "noun";
+                                } else if (variant->part_of_speech == PART_OF_SPEECH_PRONOUN) {
+                                    json_variant["part_of_speech"] = "pronoun";
+                                } else {
+                                    throw std::logic_error("Invalid part of speech");
+                                }
                                 auto noun = (Noun*) variant.get();
 
                                 switch (noun->casus) {
