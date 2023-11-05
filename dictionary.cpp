@@ -87,7 +87,10 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
 
         std::string split_word;
         ss >> split_word;
-        split_word.erase(std::remove_if(split_word.begin(), split_word.end(), ispunct), split_word.end());
+        split_word.erase(std::remove_if(split_word.begin(), split_word.end(), [](char c) {
+            return c == '.';
+        }),
+            split_word.end());
         if (!pw::string::iequals(split_word, ascii_word)) {
             if (!word_info.variants.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
                 ss.seekg(0);
