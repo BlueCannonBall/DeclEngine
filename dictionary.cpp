@@ -28,6 +28,24 @@ struct CaseInsensitiveHasher {
 // Some of these exist because I disagree with Whitaker's definitions, and others exist because some of Whitaker's entries are unparseable
 const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, CaseInsensitiveComparer> internal_dictionary = {
     {
+        "de",
+        {
+            .variants = {
+                std::make_shared<Preposition>(CASUS_ABLATIVE),
+            },
+            .english_base = "about",
+        },
+    },
+    {
+        "de",
+        {
+            .variants = {
+                std::make_shared<Preposition>(CASUS_ABLATIVE),
+            },
+            .english_base = "down",
+        },
+    },
+    {
         "rapide",
         {
             .variants = {
