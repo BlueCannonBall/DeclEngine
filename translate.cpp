@@ -547,6 +547,14 @@ std::string Pronoun::english_equivalent(const std::string& english_base) const {
             {"themself", "themselves"},
         },
     };
+    static constexpr const char* prefixes[7] = {
+        nullptr,
+        "of ",
+        "to/for ",
+        nullptr,
+        nullptr,
+        "O ",
+    };
 
     switch (declension) {
     case 4:
@@ -562,5 +570,9 @@ std::string Pronoun::english_equivalent(const std::string& english_base) const {
         break;
     }
 
-    return Noun::english_equivalent(english_base);
+    if (prefixes[casus]) {
+        return prefixes[casus] + english_base; // Add prefix
+    } else {
+        return english_base;
+    }
 }

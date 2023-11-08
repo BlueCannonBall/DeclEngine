@@ -156,7 +156,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             // Parse case
             Casus casus;
             switch (hash(string_case)) {
-            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("NOM"):
+            case hash("X"): casus = CASUS_NOMINATIVE; break;
             case hash("GEN"): casus = CASUS_GENITIVE; break;
             case hash("DAT"): casus = CASUS_DATIVE; break;
             case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
@@ -265,7 +266,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             // Parse case
             Casus casus;
             switch (hash(string_case)) {
-            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("NOM"):
+            case hash("X"): casus = CASUS_NOMINATIVE; break;
             case hash("GEN"): casus = CASUS_GENITIVE; break;
             case hash("DAT"): casus = CASUS_DATIVE; break;
             case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
@@ -323,7 +325,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             // Parse case
             Casus casus;
             switch (hash(string_case)) {
-            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("NOM"):
+            case hash("X"): casus = CASUS_NOMINATIVE; break;
             case hash("GEN"): casus = CASUS_GENITIVE; break;
             case hash("DAT"): casus = CASUS_DATIVE; break;
             case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
@@ -362,7 +365,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             // Parse case
             Casus casus;
             switch (hash(string_case)) {
-            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("NOM"):
+            case hash("X"): casus = CASUS_NOMINATIVE; break;
             case hash("GEN"): casus = CASUS_GENITIVE; break;
             case hash("DAT"): casus = CASUS_DATIVE; break;
             case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
@@ -428,7 +432,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             // Parse case
             Casus casus;
             switch (hash(string_case)) {
-            case hash("NOM"): casus = CASUS_NOMINATIVE; break;
+            case hash("NOM"):
+            case hash("X"): casus = CASUS_NOMINATIVE; break;
             case hash("GEN"): casus = CASUS_GENITIVE; break;
             case hash("DAT"): casus = CASUS_DATIVE; break;
             case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
