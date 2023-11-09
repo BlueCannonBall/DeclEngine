@@ -303,6 +303,18 @@ int main() {
                 }
             },
         });
+    
+    server->route("/sentence_info",
+    pw::HTTPRoute {
+            [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
+                pw::QueryParameters::map_type::const_iterator sentence_it;
+                if ((sentence_it = req.query_parameters->find("sentence")) == req.query_parameters->end()) {
+                    return pw::HTTPResponse::make_basic(404);
+                }
+
+                std::vector<std::string> split_sentence = pw::string::split_and_trim(sentence_it->second, ' ');
+            },
+        });
 
     if (server->bind("0.0.0.0", 8000) == PN_ERROR) {
         std::cerr << "Error: " << pn::universal_strerror() << std::endl;
