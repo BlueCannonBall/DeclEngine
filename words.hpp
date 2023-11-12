@@ -59,6 +59,13 @@ enum Mood {
     MOOD_INFINITIVE,
 };
 
+enum KeyComponent {
+    COMPONENT_NONE,
+    COMPONENT_SUBJECT,
+    COMPONENT_VERB,
+    COMPONENT_OBJECT,
+};
+
 typedef unsigned short Declension;
 typedef unsigned short Conjugation;
 typedef unsigned short Person;
@@ -72,6 +79,10 @@ public:
 
     virtual ~WordVariant() = default;
     virtual std::string english_equivalent(const std::string& english_base) const = 0;
+
+    virtual KeyComponent component() const {
+        return COMPONENT_NONE;
+    }
 };
 
 class Noun : public WordVariant {
@@ -91,6 +102,14 @@ public:
         gender(gender) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+
+    KeyComponent component() const override {
+        switch (casus) {
+        case CASUS_NOMINATIVE: return COMPONENT_SUBJECT;
+        case CASUS_ACCUSATIVE: return COMPONENT_SUBJECT;
+        default: return COMPONENT_NONE;
+        }
+    }
 };
 
 class Verb : public WordVariant {
@@ -114,6 +133,10 @@ public:
         plural(plural) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+
+    KeyComponent component() const override {
+        return COMPONENT_VERB;
+    }
 };
 
 class Participle : public WordVariant {
