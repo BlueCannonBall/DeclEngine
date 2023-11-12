@@ -292,7 +292,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         },
     };
 
-    if (english_base == "be") {
+    if (conjugation == 5 && english_base == "be") {
         if (be[mood][tense][person][plural]) {
             return be[mood][tense][person][plural];
         }

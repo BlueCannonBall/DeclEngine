@@ -24,8 +24,8 @@ struct CaseInsensitiveHasher {
     }
 };
 
-// These dictionary entries are some of my own, and when any are found for a given word, they take precedence over all of Whitaker's entries
-// Some of these exist because I disagree with Whitaker's definitions, and others exist because some of Whitaker's entries are unparseable
+// These dictionary entries are some of my own, and when any are found for a given word, they take precedence over all of Whitaker's entries.
+// Some of these exist because I disagree with Whitaker's definitions, and others exist because some of Whitaker's entries are unparseable.
 const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, CaseInsensitiveComparer> internal_dictionary = {
     {
         "quid",
@@ -43,7 +43,7 @@ const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, Case
             .variants = {
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
-            .english_base = "about",
+            .english_base = "down",
         },
     },
     {
@@ -52,7 +52,7 @@ const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, Case
             .variants = {
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
-            .english_base = "down",
+            .english_base = "about",
         },
     },
     {

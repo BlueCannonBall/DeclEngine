@@ -8,7 +8,7 @@ words = []
 for word in input_text:
     words.append(min(requests.get("http://localhost:8000/word_info", params={"word": word}).json(), key=lambda a: len(a["english_base"])))
 
-# Cull impossible variants
+# Eliminate impossible variants
 for i in range(len(words) - 1):
     for preposition in words[i]["variants"]:
         if preposition["part_of_speech"] == "preposition":
