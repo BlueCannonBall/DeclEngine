@@ -2,10 +2,12 @@
 #include "dictionary.hpp"
 #include "json.hpp"
 #include "words.hpp"
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 using nlohmann::json;
 
@@ -303,16 +305,97 @@ int main() {
                 }
             },
         });
-    
+
     server->route("/sentence_info",
-    pw::HTTPRoute {
+        pw::HTTPRoute {
             [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
-                pw::QueryParameters::map_type::const_iterator sentence_it;
-                if ((sentence_it = req.query_parameters->find("sentence")) == req.query_parameters->end()) {
-                    return pw::HTTPResponse::make_basic(404);
+                pw::QueryParameters::map_type::const_iterator input_sentence_it;
+                if ((input_sentence_it = req.query_parameters->find("sentence")) == req.query_parameters->end()) {
+                    return pw::HTTPResponse::make_basic(400);
                 }
 
-                std::vector<std::string> split_sentence = pw::string::split_and_trim(sentence_it->second, ' ');
+                std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
+                std::vector<WordInfo> input_words;
+                for (const auto& string_word : split_input_sentence) {
+                    std::vector<WordInfo> possible_words;
+                    if (query_dictionary(string_word, possible_words)) {
+                        input_words.push_back(std::move(possible_words.back()));
+                    }
+                }
+
+                // Eliminate impossible variants
+                for (size_t i = 0; i < input_words.size() - 1; ++i) {
+                    for (const auto& variant : input_words[i].variants) {
+                        if (auto preposition = dynamic_cast<Preposition*>(variant.get())) {
+                            size_t j = i + 1;
+                            input_words[j].variants.erase(std::remove_if(input_words[j].variants.begin(), input_words[j].variants.end(), [preposition](const auto& variant) {
+                                Noun* noun;
+                                return (noun = dynamic_cast<Noun*>(variant.get())) && noun->casus != preposition->casus;
+                            }),
+                                input_words[j].variants.end());
+                        }
+                    }
+                }
+
+                std::vector<std::pair<std::string, std::shared_ptr<WordVariant>>> output_variants;
+                {
+                    std::vector<std::shared_ptr<Noun>> subjects;
+                    std::vector<std::shared_ptr<Verb>> verbs;
+                    std::vector<std::shared_ptr<Noun>> objects;
+                    for (size_t i = 0; i < input_words.size(); ++i) {
+                        WordInfo& word = input_words[i];
+
+                        bool found_variant = false;
+                        switch (word.variants.front()->part_of_speech) {
+                        case PART_OF_SPEECH_NOUN:
+                        case PART_OF_SPEECH_PRONOUN:
+                            for (const auto& variant : word.variants) {
+                                auto noun = (Noun*) variant.get();
+                                if (subjects.size() <= objects.size() && noun->casus == CASUS_NOMINATIVE) {
+                                    subjects.push_back(std::static_pointer_cast<Noun>(variant));
+                                    output_variants.push_back({word.english_base, variant});
+                                    found_variant = true;
+                                    break;
+                                } else if (noun->casus == CASUS_ACCUSATIVE) {
+                                    objects.push_back(std::static_pointer_cast<Noun>(variant));
+                                    output_variants.push_back({word.english_base, variant});
+                                    found_variant = true;
+                                    break;
+                                }
+                            }
+                            break;
+
+                        case PART_OF_SPEECH_VERB:
+                            for (const auto& variant : word.variants) {
+                                auto verb = (Verb*) variant.get();
+                                if (subjects.empty() || verb->plural == subjects.back()->plural) {
+                                    verbs.push_back(std::static_pointer_cast<Verb>(variant));
+                                    output_variants.push_back({word.english_base, variant});
+                                    found_variant = true;
+                                    break;
+                                }
+                            }
+                            break;
+
+                        default:
+                            break;
+                        }
+
+                        if (!found_variant) {
+                            output_variants.push_back({word.english_base, word.variants.front()});
+                        }
+                    }
+                }
+
+                std::string ret;
+                for (size_t i = 0; i < output_variants.size(); ++i) {
+                    if (i) {
+                        ret.push_back(' ');
+                    }
+                    ret += output_variants[i].second->english_equivalent(output_variants[i].first) + ' ';
+                }
+
+                return pw::HTTPResponse(200, ret, {{"Content-Type", "text/plain"}});
             },
         });
 
