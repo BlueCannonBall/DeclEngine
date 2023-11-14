@@ -385,7 +385,7 @@ int main() {
                     }
                 }
 
-                // Move verbs before objects
+                // Reorder words
                 {
                     bool done;
                     do {
@@ -393,6 +393,16 @@ int main() {
 
                         decltype(output_variants)::iterator last_key_variant_it = output_variants.end();
                         for (auto it = output_variants.begin(); it != output_variants.end(); ++it) {
+                            if (last_key_variant_it != output_variants.end()) {
+                                if ((last_key_variant_it->second->part_of_speech == PART_OF_SPEECH_NOUN &&
+                                        it->second->part_of_speech == PART_OF_SPEECH_ADJECTIVE) ||
+                                    (last_key_variant_it->second->component() == COMPONENT_OBJECT &&
+                                        it->second->component() == COMPONENT_VERB)) {
+                                    std::swap(*it, *last_key_variant_it);
+                                    done = false;
+                                    break;
+                                }
+                            }
                             if (last_key_variant_it != output_variants.end() &&
                                 last_key_variant_it->second->component() == COMPONENT_OBJECT &&
                                 it->second->component() == COMPONENT_VERB) {
@@ -401,7 +411,9 @@ int main() {
                                 break;
                             }
 
-                            if (it->second->component()) {
+                            if (it->second->component() &&
+                                (last_key_variant_it == output_variants.end() ||
+                                    last_key_variant_it->second->component() != it->second->component())) {
                                 last_key_variant_it = it;
                             }
                         }
@@ -417,13 +429,12 @@ int main() {
 
                 std::vector<std::string> split_output_sentence = pw::string::split(output_sentence, ' ');
                 split_output_sentence.erase(std::unique(split_output_sentence.begin(), split_output_sentence.end()), split_output_sentence.end());
-                
+
                 output_sentence.clear();
                 for (size_t i = 0; i < split_output_sentence.size(); ++i) {
                     if (i) output_sentence.push_back(' ');
                     output_sentence += split_output_sentence[i];
                 }
-
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
             },
