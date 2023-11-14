@@ -319,7 +319,7 @@ int main() {
                 for (const auto& string_word : split_input_sentence) {
                     std::vector<WordInfo> possible_words;
                     if (query_dictionary(string_word, possible_words)) {
-                        input_words.push_back(std::move(possible_words.back()));
+                        input_words.push_back(std::move(possible_words.front()));
                     }
                 }
 
@@ -342,9 +342,7 @@ int main() {
                     std::vector<std::shared_ptr<Noun>> subjects;
                     std::vector<std::shared_ptr<Verb>> verbs;
                     std::vector<std::shared_ptr<Noun>> objects;
-                    for (size_t i = 0; i < input_words.size(); ++i) {
-                        WordInfo& word = input_words[i];
-
+                    for (const auto& word : input_words) {
                         bool found_variant = false;
                         switch (word.variants.front()->part_of_speech) {
                         case PART_OF_SPEECH_NOUN:
@@ -387,15 +385,47 @@ int main() {
                     }
                 }
 
-                std::string ret;
-                for (size_t i = 0; i < output_variants.size(); ++i) {
-                    if (i) {
-                        ret.push_back(' ');
-                    }
-                    ret += output_variants[i].second->english_equivalent(output_variants[i].first) + ' ';
+                // Move verbs before objects
+                {
+                    bool done;
+                    do {
+                        done = true;
+
+                        decltype(output_variants)::iterator last_key_variant_it = output_variants.end();
+                        for (auto it = output_variants.begin(); it != output_variants.end(); ++it) {
+                            if (last_key_variant_it != output_variants.end() &&
+                                last_key_variant_it->second->component() == COMPONENT_OBJECT &&
+                                it->second->component() == COMPONENT_VERB) {
+                                std::swap(*it, *last_key_variant_it);
+                                done = false;
+                                break;
+                            }
+
+                            if (it->second->component()) {
+                                last_key_variant_it = it;
+                            }
+                        }
+                    } while (!done);
                 }
 
-                return pw::HTTPResponse(200, ret, {{"Content-Type", "text/plain"}});
+                std::string output_sentence;
+
+                for (size_t i = 0; i < output_variants.size(); ++i) {
+                    if (i) output_sentence.push_back(' ');
+                    output_sentence += output_variants[i].second->english_equivalent(output_variants[i].first);
+                }
+
+                std::vector<std::string> split_output_sentence = pw::string::split(output_sentence, ' ');
+                split_output_sentence.erase(std::unique(split_output_sentence.begin(), split_output_sentence.end()), split_output_sentence.end());
+                
+                output_sentence.clear();
+                for (size_t i = 0; i < split_output_sentence.size(); ++i) {
+                    if (i) output_sentence.push_back(' ');
+                    output_sentence += split_output_sentence[i];
+                }
+
+
+                return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
             },
         });
 

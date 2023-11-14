@@ -106,7 +106,7 @@ public:
     KeyComponent component() const override {
         switch (casus) {
         case CASUS_NOMINATIVE: return COMPONENT_SUBJECT;
-        case CASUS_ACCUSATIVE: return COMPONENT_SUBJECT;
+        case CASUS_ACCUSATIVE: return COMPONENT_OBJECT;
         default: return COMPONENT_NONE;
         }
     }
