@@ -319,7 +319,10 @@ int main() {
                 for (const auto& string_word : split_input_sentence) {
                     std::vector<WordInfo> possible_words;
                     if (query_dictionary(string_word, possible_words)) {
-                        input_words.push_back(std::move(possible_words.back()));
+                        auto word_info_it = std::min_element(possible_words.begin(), possible_words.end(), [](const auto& a, const auto& b) {
+                            return a.english_base.size() < b.english_base.size();
+                        });
+                        input_words.push_back(std::move(*word_info_it));
                     }
                 }
 
@@ -390,7 +393,6 @@ int main() {
                     bool done;
                     do {
                         done = true;
-
                         decltype(output_variants)::iterator last_key_variant_it = output_variants.end();
                         for (auto it = output_variants.begin(); it != output_variants.end(); ++it) {
                             if (last_key_variant_it != output_variants.end()) {
@@ -402,13 +404,6 @@ int main() {
                                     done = false;
                                     break;
                                 }
-                            }
-                            if (last_key_variant_it != output_variants.end() &&
-                                last_key_variant_it->second->component() == COMPONENT_OBJECT &&
-                                it->second->component() == COMPONENT_VERB) {
-                                std::swap(*it, *last_key_variant_it);
-                                done = false;
-                                break;
                             }
 
                             if (it->second->component() &&

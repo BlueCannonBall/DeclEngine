@@ -44,7 +44,7 @@ const std::unordered_multimap<std::string, const WordInfo, CaseInsensitiveHasher
             .variants = {
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
-            .english_base = "down",
+            .english_base = "about",
         },
     },
     {
@@ -53,7 +53,7 @@ const std::unordered_multimap<std::string, const WordInfo, CaseInsensitiveHasher
             .variants = {
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
-            .english_base = "about",
+            .english_base = "down",
         },
     },
     {
