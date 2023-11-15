@@ -6,6 +6,7 @@
 #include <cctype>
 #include <iterator>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <unicode/translit.h>
 #include <unicode/unistr.h>
@@ -26,7 +27,7 @@ struct CaseInsensitiveHasher {
 
 // These dictionary entries are some of my own, and when any are found for a given word, they take precedence over all of Whitaker's entries.
 // Some of these exist because I disagree with Whitaker's definitions, and others exist because some of Whitaker's entries are unparseable.
-const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, CaseInsensitiveComparer> internal_dictionary = {
+const std::unordered_multimap<std::string, const WordInfo, CaseInsensitiveHasher, CaseInsensitiveComparer> internal_dictionary = {
     {
         "quid",
         {
@@ -43,7 +44,7 @@ const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, Case
             .variants = {
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
-            .english_base = "about",
+            .english_base = "down",
         },
     },
     {
@@ -52,7 +53,7 @@ const std::unordered_multimap<std::string, WordInfo, CaseInsensitiveHasher, Case
             .variants = {
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
-            .english_base = "down",
+            .english_base = "about",
         },
     },
     {
@@ -98,7 +99,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
     }
 
     boost::process::ipstream out;
-    boost::process::child words("bin/words", ascii_word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out);
+    boost::process::opstream in;
+    boost::process::child words("bin/words", ascii_word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out, boost::process::std_in < in);
 
     auto range = internal_dictionary.equal_range(ascii_word);
     if (range.first != range.second) {
@@ -115,7 +117,10 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
         std::istringstream ss(line);
         if (line == "Two words" ||
             pw::string::ends_with(line, "UNKNOWN")) {
-            return 0;
+            break;
+        } else if (pw::string::ends_with(line, "MORE - hit RETURN/ENTER to continue")) {
+            in << std::endl;
+            continue;
         } else if (line.front() == ' ' || line.front() == '-') {
             continue;
         }
@@ -452,6 +457,21 @@ size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret) {
             break;
         }
         }
+    }
+
+    if (ret.empty() && isupper(ascii_word.front())) {
+        ret.push_back({
+            .variants = {
+                std::make_shared<Noun>(0, CASUS_NOMINATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_GENITIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_DATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_ACCUSATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_ABLATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_VOCATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_LOCATIVE, false, GENDER_COMMON),
+            },
+            .english_base = ascii_word,
+        });
     }
 
     return ret.size();

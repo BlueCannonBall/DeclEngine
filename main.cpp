@@ -319,15 +319,15 @@ int main() {
                 for (const auto& string_word : split_input_sentence) {
                     std::vector<WordInfo> possible_words;
                     if (query_dictionary(string_word, possible_words)) {
-                        input_words.push_back(std::move(possible_words.front()));
+                        input_words.push_back(std::move(possible_words.back()));
                     }
                 }
 
                 // Eliminate impossible variants
                 for (size_t i = 0; i < input_words.size() - 1; ++i) {
+                    size_t j = i + 1;
                     for (const auto& variant : input_words[i].variants) {
                         if (auto preposition = dynamic_cast<Preposition*>(variant.get())) {
-                            size_t j = i + 1;
                             input_words[j].variants.erase(std::remove_if(input_words[j].variants.begin(), input_words[j].variants.end(), [preposition](const auto& variant) {
                                 Noun* noun;
                                 return (noun = dynamic_cast<Noun*>(variant.get())) && noun->casus != preposition->casus;
