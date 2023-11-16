@@ -400,7 +400,8 @@ int main() {
                                         it->second->part_of_speech == PART_OF_SPEECH_ADJECTIVE) ||
                                     (last_key_variant_it->second->component() == COMPONENT_OBJECT &&
                                         it->second->component() == COMPONENT_VERB)) {
-                                    std::swap(*it, *last_key_variant_it);
+                                    output_variants.insert(last_key_variant_it, *it);
+                                    output_variants.erase(it + 1);
                                     done = false;
                                     break;
                                 }
