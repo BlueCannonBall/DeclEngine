@@ -21,6 +21,10 @@ struct WordInfo {
     bool is_valid() const {
         return !variants.empty();
     }
+
+    PartOfSpeech part_of_speech() const {
+        return variants.front()->part_of_speech;
+    }
 };
 
 std::string remove_accents(const std::string& str);
