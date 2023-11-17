@@ -340,6 +340,15 @@ int main() {
                     }
                 }
 
+                std::vector<std::vector<WordInfo>> word_groups;
+                std::vector<std::pair<std::string, std::shared_ptr<WordVariant>> group;
+                for (const auto& word : input_words) {
+                    if (word_groups.empty()) {
+
+                    }
+                    // word_groups.push_back(std::move(group));
+                }
+
                 std::vector<std::pair<std::string, std::shared_ptr<WordVariant>>> output_variants;
                 {
                     std::vector<std::shared_ptr<Noun>> subjects;

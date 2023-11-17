@@ -312,6 +312,22 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         switch (mood) {
         case MOOD_INDICATIVE:
             switch (tense) {
+            case TENSE_PRESENT:
+                switch (ret.back()) {
+                case 'y':
+                    ret.back() = 'i';
+                case 'a':
+                case 'i':
+                case 'o':
+                case 'u':
+                case 'h':
+                case 's':
+                    ret.push_back('e');
+                    break;
+                }
+                ret.push_back('s');
+                break;
+
             case TENSE_IMPERFECT:
                 if (ret.back() == 'e') {
                     ret.back() = 'i';
