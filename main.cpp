@@ -327,32 +327,33 @@ int main() {
                 }
 
                 // Eliminate impossible variants
-                for (size_t i = 0; i < input_words.size() - 1; ++i) {
-                    size_t j = i + 1;
-                    for (const auto& variant : input_words[i].variants) {
-                        if (auto preposition = dynamic_cast<Preposition*>(variant.get())) {
-                            input_words[j].variants.erase(std::remove_if(input_words[j].variants.begin(), input_words[j].variants.end(), [preposition](const auto& variant) {
-                                Noun* noun;
-                                return (noun = dynamic_cast<Noun*>(variant.get())) && noun->casus != preposition->casus;
-                            }),
-                                input_words[j].variants.end());
-                        }
-                    }
-                }
+                // for (size_t i = 0; i < input_words.size() - 1; ++i) {
+                //     size_t j = i + 1;
+                //     for (const auto& variant : input_words[i].variants) {
+                //         if (auto preposition = dynamic_cast<Preposition*>(variant.get())) {
+                //             input_words[j].variants.erase(std::remove_if(input_words[j].variants.begin(), input_words[j].variants.end(), [preposition](const auto& variant) {
+                //                 Noun* noun;
+                //                 return (noun = dynamic_cast<Noun*>(variant.get())) && noun->casus != preposition->casus;
+                //             }),
+                //                 input_words[j].variants.end());
+                //         }
+                //     }
+                // }
 
-                std::vector<std::vector<WordInfo>> word_groups;
-                std::vector<WordInfo> group;
-                for (const auto& word : input_words) {
-                    if (group.empty()) {
-                        group.push_back(word);
-                    } else {
-                        switch (group.front().part_of_speech()) {
-                        default:
-                            break;
-                        }
-                    }
-                    // word_groups.push_back(std::move(group));
-                }
+                // std::vector<std::vector<WordInfo>> word_groups;
+                // std::vector<WordInfo> group;
+                // for (const auto& word : input_words) {
+                //     if (group.empty()) {
+                //         group.push_back(word);
+                //     } else {
+
+                //         switch (group.front().part_of_speech()) {
+                //         default:
+                //             break;
+                //         }
+                //     }
+                //     // word_groups.push_back(std::move(group));
+                // }
 
                 std::vector<std::pair<std::string, std::shared_ptr<WordVariant>>> output_variants;
                 {
@@ -360,34 +361,60 @@ int main() {
                     std::vector<std::shared_ptr<Verb>> verbs;
                     std::vector<std::shared_ptr<Noun>> objects;
                     for (const auto& word : input_words) {
-                        bool found_variant = false;
-                        switch (word.variants.front()->part_of_speech) {
+                        switch (word.part_of_speech()) {
                         case PART_OF_SPEECH_NOUN:
                         case PART_OF_SPEECH_PRONOUN:
-                            for (const auto& variant : word.variants) {
-                                auto noun = (Noun*) variant.get();
-                                if (subjects.size() <= objects.size() && noun->casus == CASUS_NOMINATIVE) {
-                                    subjects.push_back(std::static_pointer_cast<Noun>(variant));
-                                    output_variants.push_back({word.english_base, variant});
-                                    found_variant = true;
-                                    break;
-                                } else if (noun->casus == CASUS_ACCUSATIVE) {
-                                    objects.push_back(std::static_pointer_cast<Noun>(variant));
-                                    output_variants.push_back({word.english_base, variant});
-                                    found_variant = true;
-                                    break;
+                            if (!output_variants.empty() && output_variants.back().second->part_of_speech == PART_OF_SPEECH_PREPOSITION) {
+                                // Check for preposition + accusative
+                                for (const auto& variant : word.variants) {
+                                    auto noun = (Noun*) variant.get();
+                                    if (noun->casus == CASUS_ACCUSATIVE) {
+                                        output_variants.push_back({word.english_base, variant});
+                                        goto next_word;
+                                    }
+                                }
+
+                                // Check for preposition + ablative
+                                for (const auto& variant : word.variants) {
+                                    auto noun = (Noun*) variant.get();
+                                    if (noun->casus == CASUS_ABLATIVE) {
+                                        output_variants.push_back({word.english_base, variant});
+                                        goto next_word;
+                                    }
                                 }
                             }
+
+                            // Check for subject
+                            if (subjects.size() <= objects.size()) {
+                                for (const auto& variant : word.variants) {
+                                    auto noun = (Noun*) variant.get();
+                                    if (noun->casus == CASUS_NOMINATIVE) {
+                                        subjects.push_back(std::static_pointer_cast<Noun>(variant));
+                                        output_variants.push_back({word.english_base, variant});
+                                        goto next_word;
+                                    }
+                                }
+                            }
+
+                            // Check for object
+                            for (const auto& variant : word.variants) {
+                                auto noun = (Noun*) variant.get();
+                                if (noun->casus == CASUS_ACCUSATIVE) {
+                                    objects.push_back(std::static_pointer_cast<Noun>(variant));
+                                    output_variants.push_back({word.english_base, variant});
+                                    goto next_word;
+                                }
+                            }
+
                             break;
 
                         case PART_OF_SPEECH_VERB:
                             for (const auto& variant : word.variants) {
                                 auto verb = (Verb*) variant.get();
-                                if (subjects.empty() || verb->plural == subjects.back()->plural) {
+                                if (subjects.empty() || verb->plural == subjects.back()->plural) { // Check for verb with matching number
                                     verbs.push_back(std::static_pointer_cast<Verb>(variant));
                                     output_variants.push_back({word.english_base, variant});
-                                    found_variant = true;
-                                    break;
+                                    goto next_word;
                                 }
                             }
                             break;
@@ -396,39 +423,38 @@ int main() {
                             break;
                         }
 
-                        if (!found_variant) {
-                            output_variants.push_back({word.english_base, word.variants.front()});
-                        }
+                        output_variants.push_back({word.english_base, word.variants.front()});
+                    next_word:;
                     }
                 }
 
                 // Reorder words
-                {
-                    bool done;
-                    do {
-                        done = true;
-                        decltype(output_variants)::iterator last_key_variant_it = output_variants.end();
-                        for (auto it = output_variants.begin(); it != output_variants.end(); ++it) {
-                            if (last_key_variant_it != output_variants.end()) {
-                                if ((last_key_variant_it->second->part_of_speech == PART_OF_SPEECH_NOUN &&
-                                        it->second->part_of_speech == PART_OF_SPEECH_ADJECTIVE) ||
-                                    (last_key_variant_it->second->component() == COMPONENT_OBJECT &&
-                                        it->second->component() == COMPONENT_VERB)) {
-                                    output_variants.insert(last_key_variant_it, *it);
-                                    output_variants.erase(it + 1);
-                                    done = false;
-                                    break;
-                                }
-                            }
+                // {
+                //     bool done;
+                //     do {
+                //         done = true;
+                //         decltype(output_variants)::iterator last_key_variant_it = output_variants.end();
+                //         for (auto it = output_variants.begin(); it != output_variants.end(); ++it) {
+                //             if (last_key_variant_it != output_variants.end()) {
+                //                 if ((last_key_variant_it->second->part_of_speech == PART_OF_SPEECH_NOUN &&
+                //                         it->second->part_of_speech == PART_OF_SPEECH_ADJECTIVE) ||
+                //                     (last_key_variant_it->second->component() == COMPONENT_OBJECT &&
+                //                         it->second->component() == COMPONENT_VERB)) {
+                //                     output_variants.insert(last_key_variant_it, *it);
+                //                     output_variants.erase(it + 1);
+                //                     done = false;
+                //                     break;
+                //                 }
+                //             }
 
-                            if (it->second->component() &&
-                                (last_key_variant_it == output_variants.end() ||
-                                    last_key_variant_it->second->component() != it->second->component())) {
-                                last_key_variant_it = it;
-                            }
-                        }
-                    } while (!done);
-                }
+                //             if (it->second->component() &&
+                //                 (last_key_variant_it == output_variants.end() ||
+                //                     last_key_variant_it->second->component() != it->second->component())) {
+                //                 last_key_variant_it = it;
+                //             }
+                //         }
+                //     } while (!done);
+                // }
 
                 std::string output_sentence;
 
