@@ -70,14 +70,14 @@ typedef unsigned short Declension;
 typedef unsigned short Conjugation;
 typedef unsigned short Person;
 
-class WordVariant {
+class WordForm {
 public:
     PartOfSpeech part_of_speech;
 
-    WordVariant(PartOfSpeech part_of_speech):
+    WordForm(PartOfSpeech part_of_speech):
         part_of_speech(part_of_speech) {}
 
-    virtual ~WordVariant() = default;
+    virtual ~WordForm() = default;
     virtual std::string english_equivalent(const std::string& english_base) const = 0;
 
     virtual KeyComponent component() const {
@@ -85,7 +85,7 @@ public:
     }
 };
 
-class Noun : public WordVariant {
+class Noun : public WordForm {
 public:
     Declension declension;
     Casus casus;
@@ -93,9 +93,9 @@ public:
     Gender gender;
 
     Noun(PartOfSpeech part_of_speech = PART_OF_SPEECH_NOUN):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Noun(Declension declension, Casus casus, bool plural, Gender gender):
-        WordVariant(PART_OF_SPEECH_NOUN),
+        WordForm(PART_OF_SPEECH_NOUN),
         declension(declension),
         casus(casus),
         plural(plural),
@@ -112,7 +112,7 @@ public:
     }
 };
 
-class Verb : public WordVariant {
+class Verb : public WordForm {
 public:
     Conjugation conjugation;
     Tense tense;
@@ -122,9 +122,9 @@ public:
     bool plural;
 
     Verb(PartOfSpeech part_of_speech = PART_OF_SPEECH_VERB):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Verb(Conjugation conjugation, Tense tense, Voice voice, Mood mood, Person person, bool plural):
-        WordVariant(PART_OF_SPEECH_VERB),
+        WordForm(PART_OF_SPEECH_VERB),
         conjugation(conjugation),
         tense(tense),
         voice(voice),
@@ -139,7 +139,7 @@ public:
     }
 };
 
-class Participle : public WordVariant {
+class Participle : public WordForm {
 public:
     Conjugation conjugation;
     Casus casus;
@@ -149,9 +149,9 @@ public:
     Voice voice;
 
     Participle(PartOfSpeech part_of_speech = PART_OF_SPEECH_PARTICIPLE):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Participle(Conjugation conjugation, Casus casus, bool plural, Gender gender, Tense tense, Voice voice):
-        WordVariant(PART_OF_SPEECH_PARTICIPLE),
+        WordForm(PART_OF_SPEECH_PARTICIPLE),
         conjugation(conjugation),
         casus(casus),
         plural(plural),
@@ -162,7 +162,7 @@ public:
     std::string english_equivalent(const std::string& english_base) const override;
 };
 
-class Supine : public WordVariant {
+class Supine : public WordForm {
 public:
     Conjugation conjugation;
     Casus casus;
@@ -170,9 +170,9 @@ public:
     Gender gender;
 
     Supine(PartOfSpeech part_of_speech = PART_OF_SPEECH_SUPINE):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Supine(Conjugation conjugation, Casus casus, bool plural, Gender gender):
-        WordVariant(PART_OF_SPEECH_SUPINE),
+        WordForm(PART_OF_SPEECH_SUPINE),
         conjugation(conjugation),
         casus(casus),
         plural(plural),
@@ -181,7 +181,7 @@ public:
     std::string english_equivalent(const std::string& english_base) const override;
 };
 
-class Adjective : public WordVariant {
+class Adjective : public WordForm {
 public:
     Declension declension;
     Casus casus;
@@ -190,9 +190,9 @@ public:
     Degree degree;
 
     Adjective(PartOfSpeech part_of_speech = PART_OF_SPEECH_ADJECTIVE):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Adjective(Declension declension, Casus casus, bool plural, Gender gender, Degree degree):
-        WordVariant(PART_OF_SPEECH_ADJECTIVE),
+        WordForm(PART_OF_SPEECH_ADJECTIVE),
         declension(declension),
         casus(casus),
         plural(plural),
@@ -202,14 +202,14 @@ public:
     std::string english_equivalent(const std::string& english_base) const override;
 };
 
-class Adverb : public WordVariant {
+class Adverb : public WordForm {
 public:
     Degree degree;
 
     Adverb(PartOfSpeech part_of_speech = PART_OF_SPEECH_ADVERB):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Adverb(Degree degree):
-        WordVariant(PART_OF_SPEECH_ADVERB),
+        WordForm(PART_OF_SPEECH_ADVERB),
         degree(degree) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
@@ -227,24 +227,24 @@ public:
     std::string english_equivalent(const std::string& english_base) const override;
 };
 
-class Conjunction : public WordVariant {
+class Conjunction : public WordForm {
 public:
     Conjunction(PartOfSpeech part_of_speech = PART_OF_SPEECH_CONJUNCTION):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
 
     inline std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
     }
 };
 
-class Preposition : public WordVariant {
+class Preposition : public WordForm {
 public:
     Casus casus;
 
     Preposition(PartOfSpeech part_of_speech = PART_OF_SPEECH_PREPOSITION):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
     Preposition(Casus casus):
-        WordVariant(PART_OF_SPEECH_PREPOSITION),
+        WordForm(PART_OF_SPEECH_PREPOSITION),
         casus(casus) {}
 
     inline std::string english_equivalent(const std::string& english_base) const override {
@@ -252,10 +252,10 @@ public:
     }
 };
 
-class Interjection : public WordVariant {
+class Interjection : public WordForm {
 public:
     Interjection(PartOfSpeech part_of_speech = PART_OF_SPEECH_INTERJECTION):
-        WordVariant(part_of_speech) {}
+        WordForm(part_of_speech) {}
 
     inline std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
