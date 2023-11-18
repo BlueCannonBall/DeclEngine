@@ -341,10 +341,15 @@ int main() {
                 }
 
                 std::vector<std::vector<WordInfo>> word_groups;
-                std::vector<std::pair<std::string, std::shared_ptr<WordVariant>> group;
+                std::vector<WordInfo> group;
                 for (const auto& word : input_words) {
-                    if (word_groups.empty()) {
-
+                    if (group.empty()) {
+                        group.push_back(word);
+                    } else {
+                        switch (group.front().part_of_speech()) {
+                        default:
+                            break;
+                        }
                     }
                     // word_groups.push_back(std::move(group));
                 }
