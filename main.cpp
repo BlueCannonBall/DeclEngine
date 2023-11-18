@@ -481,9 +481,9 @@ int main() {
                 std::vector<std::string> split_output_sentence = pw::string::split(output_sentence, ' ');
                 split_output_sentence.erase(std::unique(split_output_sentence.begin(), split_output_sentence.end()), split_output_sentence.end());
 
-                output_sentence.clear();
-                for (size_t i = 0; i < split_output_sentence.size(); ++i) {
-                    if (i) output_sentence.push_back(' ');
+                output_sentence = split_output_sentence.front();
+                for (size_t i = 1; i < split_output_sentence.size(); ++i) {
+                    output_sentence.push_back(' ');
                     output_sentence += split_output_sentence[i];
                 }
 
