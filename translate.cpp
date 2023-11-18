@@ -313,10 +313,12 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
     // Generate irregular verbs table
     if (irregular_verbs.empty()) {
         std::ifstream irregular_verbs_file("irregular_verbs.json");
-        json irregular_verbs_json = json::parse(irregular_verbs_file);
-        irregular_verbs.reserve(irregular_verbs_json.size());
-        for (const auto& verb : irregular_verbs_json.items()) {
-            irregular_verbs[verb.key()] = verb.value();
+        if (irregular_verbs_file.is_open()) {
+            json irregular_verbs_json = json::parse(irregular_verbs_file);
+            irregular_verbs.reserve(irregular_verbs_json.size());
+            for (const auto& verb : irregular_verbs_json.items()) {
+                irregular_verbs[verb.key()] = verb.value();
+            }
         }
     }
 
