@@ -14,18 +14,18 @@ inline size_t hash(const std::string& str, size_t i = 0) {
     return !str[i] ? 5381 : (hash(str, i + 1) * 33) ^ str[i];
 }
 
-struct WordInfo {
-    std::vector<std::shared_ptr<WordVariant>> variants;
+struct WordVariant {
+    std::vector<std::shared_ptr<WordForm>> forms;
     std::string english_base;
 
     bool is_valid() const {
-        return !variants.empty();
+        return !forms.empty();
     }
 
     PartOfSpeech part_of_speech() const {
-        return variants.front()->part_of_speech;
+        return forms.front()->part_of_speech;
     }
 };
 
 std::string remove_accents(const std::string& str);
-size_t query_dictionary(const std::string& word, std::vector<WordInfo>& ret);
+size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret);
