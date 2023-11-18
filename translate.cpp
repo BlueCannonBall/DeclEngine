@@ -1,6 +1,11 @@
 #include "Polyweb/string.hpp"
+#include "json.hpp"
 #include "words.hpp"
+#include <fstream>
 #include <stdexcept>
+#include <unordered_map>
+
+using nlohmann::json;
 
 std::string Noun::english_equivalent(const std::string& english_base) const {
     static constexpr const char* prefixes[7] = {
@@ -292,6 +297,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             },
         },
     };
+    thread_local std::unordered_map<std::string, std::string> irregular_verbs;
 
     if (conjugation == 5 && english_base == "be") {
         if (be[mood][tense][person][plural]) {
@@ -301,9 +307,17 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 
     std::string ret;
     if (prefixes[voice][mood][tense][person][plural]) {
-        ret = prefixes[voice][mood][tense][person][plural] + english_base; // Add prefix
-    } else {
-        ret = english_base;
+        ret = prefixes[voice][mood][tense][person][plural]; // Add prefix
+    }
+
+    // Generate irregular verbs table
+    if (irregular_verbs.empty()) {
+        std::ifstream irregular_verbs_file("irregular_verbs.json");
+        json irregular_verbs_json = json::parse(irregular_verbs_file);
+        irregular_verbs.reserve(irregular_verbs_json.size());
+        for (const auto& verb : irregular_verbs_json.items()) {
+            irregular_verbs[verb.key()] = verb.value();
+        }
     }
 
     // Add suffix
@@ -313,6 +327,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         case MOOD_INDICATIVE:
             switch (tense) {
             case TENSE_PRESENT:
+                ret += english_base;
                 switch (ret.back()) {
                 case 'y':
                     ret.back() = 'i';
@@ -329,6 +344,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                 break;
 
             case TENSE_IMPERFECT:
+                ret += english_base;
                 if (ret.back() == 'e') {
                     ret.back() = 'i';
                     ret += "ng";
@@ -339,17 +355,25 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 
             case TENSE_PERFECT:
             case TENSE_PLUPERFECT:
-            case TENSE_FUTURE_PERFECT:
-                if (ret.back() == 'e') {
-                    ret.push_back('d');
-                    break;
-                } else if (ret.back() == 'y') {
-                    ret.back() = 'i';
+            case TENSE_FUTURE_PERFECT: {
+                decltype(irregular_verbs)::const_iterator irregular_verb_it;
+                if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
+                    ret += irregular_verb_it->second;
+                } else {
+                    ret += english_base;
+                    if (ret.back() == 'e') {
+                        ret.push_back('d');
+                        break;
+                    } else if (ret.back() == 'y') {
+                        ret.back() = 'i';
+                    }
+                    ret += "ed";
                 }
-                ret += "ed";
                 break;
+            }
 
             default:
+                ret += english_base;
                 break;
             }
             break;
@@ -358,47 +382,72 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             switch (tense) {
             case TENSE_PERFECT:
             case TENSE_PLUPERFECT:
-            case TENSE_FUTURE_PERFECT:
-                if (ret.back() == 'e') {
-                    ret.push_back('d');
-                    break;
-                } else if (ret.back() == 'y') {
-                    ret.back() = 'i';
+            case TENSE_FUTURE_PERFECT: {
+                decltype(irregular_verbs)::const_iterator irregular_verb_it;
+                if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
+                    ret += irregular_verb_it->second;
+                } else {
+                    ret += english_base;
+                    if (ret.back() == 'e') {
+                        ret.push_back('d');
+                        break;
+                    } else if (ret.back() == 'y') {
+                        ret.back() = 'i';
+                    }
+                    ret += "ed";
                 }
-                ret += "ed";
                 break;
+            }
 
             default:
+                ret += english_base;
                 break;
             }
             break;
 
         case MOOD_INFINITIVE:
             if (tense == TENSE_PERFECT) {
-                if (ret.back() == 'e') {
-                    ret.push_back('d');
-                    break;
-                } else if (ret.back() == 'y') {
-                    ret.back() = 'i';
+                decltype(irregular_verbs)::const_iterator irregular_verb_it;
+                if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
+                    ret += irregular_verb_it->second;
+                } else {
+                    ret += english_base;
+                    if (ret.back() == 'e') {
+                        ret.push_back('d');
+                        break;
+                    } else if (ret.back() == 'y') {
+                        ret.back() = 'i';
+                    }
+                    ret += "ed";
                 }
-                ret += "ed";
+                break;
+            } else {
+                ret += english_base;
             }
             break;
 
         default:
+            ret += english_base;
             break;
         }
         break;
 
-    case VOICE_PASSIVE:
-        if (ret.back() == 'e') {
-            ret.push_back('d');
-            break;
-        } else if (ret.back() == 'y') {
-            ret.back() = 'i';
+    case VOICE_PASSIVE: {
+        decltype(irregular_verbs)::const_iterator irregular_verb_it;
+        if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
+            ret += irregular_verb_it->second;
+        } else {
+            ret += english_base;
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+                break;
+            } else if (ret.back() == 'y') {
+                ret.back() = 'i';
+            }
+            ret += "ed";
         }
-        ret += "ed";
         break;
+    }
     }
 
     return ret;
