@@ -316,8 +316,19 @@ int main() {
 
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
                 std::vector<std::vector<WordVariant>> input_words;
-                for (const auto& string_word : split_input_sentence) {
+                for (auto string_word : split_input_sentence) {
                     std::vector<WordVariant> word;
+
+                    if (pw::string::ends_with(string_word, "que")) {
+                        string_word.erase(string_word.size() - 3);
+
+                        query_dictionary("que", word);
+                        std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
+                            return a.english_base.size() < b.english_base.size();
+                        });
+                        input_words.push_back(std::move(word));
+                    }
+
                     if (query_dictionary(string_word, word)) {
                         std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
                             return a.english_base.size() < b.english_base.size();
@@ -468,10 +479,9 @@ int main() {
                     }
                 } while (!done);
 
-                std::string output_sentence;
-
-                for (size_t i = 0; i < output_forms.size(); ++i) {
-                    if (i) output_sentence.push_back(' ');
+                std::string output_sentence = output_forms.front().second->english_equivalent(output_forms.front().first);
+                for (size_t i = 1; i < output_forms.size(); ++i) {
+                    output_sentence.push_back(' ');
                     output_sentence += output_forms[i].second->english_equivalent(output_forms[i].first);
                 }
 
