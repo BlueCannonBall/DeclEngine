@@ -4,6 +4,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <unordered_map>
+#include <utility>
 
 using nlohmann::json;
 
@@ -297,7 +298,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             },
         },
     };
-    thread_local std::unordered_map<std::string, std::string> irregular_verbs;
+    thread_local std::unordered_map<std::string, std::pair<std::string, std::string>> irregular_verbs;
 
     if (conjugation == 5 && english_base == "be") {
         if (be[mood][tense][person][plural]) {
@@ -317,7 +318,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             json irregular_verbs_json = json::parse(irregular_verbs_file);
             irregular_verbs.reserve(irregular_verbs_json.size());
             for (const auto& verb : irregular_verbs_json.items()) {
-                irregular_verbs[verb.key()] = verb.value();
+                irregular_verbs[verb.key()] = std::make_pair<std::string, std::string>(verb.value()["past"], verb.value()["past_participle"]);
             }
         }
     }
@@ -330,19 +331,19 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             switch (tense) {
             case TENSE_PRESENT:
                 ret += english_base;
-                switch (ret.back()) {
-                case 'y':
-                    ret.back() = 'i';
-                case 'a':
-                case 'i':
-                case 'o':
-                case 'u':
-                case 'h':
-                case 's':
-                    ret.push_back('e');
-                    break;
+                if (!plural) {
+                    switch (ret.back()) {
+                    case 'a':
+                    case 'i':
+                    case 'o':
+                    case 'u':
+                    case 'h':
+                    case 's':
+                        ret.push_back('e');
+                        break;
+                    }
+                    ret.push_back('s');
                 }
-                ret.push_back('s');
                 break;
 
             case TENSE_IMPERFECT:
@@ -360,7 +361,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             case TENSE_FUTURE_PERFECT: {
                 decltype(irregular_verbs)::const_iterator irregular_verb_it;
                 if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
-                    ret += irregular_verb_it->second;
+                    ret += tense == TENSE_PERFECT ? irregular_verb_it->second.first : irregular_verb_it->second.second;
                 } else {
                     ret += english_base;
                     if (ret.back() == 'e') {
@@ -383,11 +384,10 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         case MOOD_SUBJUNCTIVE:
             switch (tense) {
             case TENSE_PERFECT:
-            case TENSE_PLUPERFECT:
-            case TENSE_FUTURE_PERFECT: {
+            case TENSE_PLUPERFECT: {
                 decltype(irregular_verbs)::const_iterator irregular_verb_it;
                 if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
-                    ret += irregular_verb_it->second;
+                    ret += irregular_verb_it->second.second;
                 } else {
                     ret += english_base;
                     if (ret.back() == 'e') {
@@ -411,7 +411,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             if (tense == TENSE_PERFECT) {
                 decltype(irregular_verbs)::const_iterator irregular_verb_it;
                 if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
-                    ret += irregular_verb_it->second;
+                    ret += irregular_verb_it->second.second;
                 } else {
                     ret += english_base;
                     if (ret.back() == 'e') {
@@ -437,7 +437,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
     case VOICE_PASSIVE: {
         decltype(irregular_verbs)::const_iterator irregular_verb_it;
         if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
-            ret += irregular_verb_it->second;
+            ret += irregular_verb_it->second.second;
         } else {
             ret += english_base;
             if (ret.back() == 'e') {
