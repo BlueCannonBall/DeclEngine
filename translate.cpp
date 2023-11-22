@@ -352,6 +352,21 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     ret.back() = 'i';
                     ret += "ng";
                 } else {
+                    if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                            switch (c) {
+                            case 'a':
+                            case 'e':
+                            case 'i':
+                            case 'o':
+                            case 'u':
+                                return true;
+
+                            default:
+                                return false;
+                            }
+                        }) == 1) {
+                        ret += ret.back();
+                    }
                     ret += "ing";
                 }
                 break;
@@ -450,6 +465,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         }
         break;
     }
+
+    default:
+        throw std::logic_error("Invalid gender");
     }
 
     return ret;
@@ -476,6 +494,21 @@ std::string Participle::english_equivalent(const std::string& english_base) cons
         ret.back() = 'i';
         ret += "ng";
     } else {
+        if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                switch (c) {
+                case 'a':
+                case 'e':
+                case 'i':
+                case 'o':
+                case 'u':
+                    return true;
+
+                default:
+                    return false;
+                }
+            }) == 1) {
+            ret += ret.back();
+        }
         ret += "ing";
     }
 

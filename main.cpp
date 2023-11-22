@@ -87,219 +87,15 @@ int main() {
                         };
 
                         for (const auto& form : variant.forms) {
-                            json json_form;
-
-                            switch (form->part_of_speech) {
-                            case PART_OF_SPEECH_NOUN:
-                            case PART_OF_SPEECH_PRONOUN: {
-                                if (form->part_of_speech == PART_OF_SPEECH_NOUN) {
-                                    json_form["part_of_speech"] = "noun";
-                                } else if (form->part_of_speech == PART_OF_SPEECH_PRONOUN) {
-                                    json_form["part_of_speech"] = "pronoun";
-                                } else {
-                                    throw std::logic_error("Invalid part of speech");
-                                }
-                                auto noun = (Noun*) form.get();
-
-                                switch (noun->casus) {
-                                case CASUS_NOMINATIVE: json_form["casus"] = "nominative"; break;
-                                case CASUS_GENITIVE: json_form["casus"] = "genitive"; break;
-                                case CASUS_DATIVE: json_form["casus"] = "dative"; break;
-                                case CASUS_ACCUSATIVE: json_form["casus"] = "accusative"; break;
-                                case CASUS_ABLATIVE: json_form["casus"] = "ablative"; break;
-                                case CASUS_VOCATIVE: json_form["casus"] = "vocative"; break;
-                                case CASUS_LOCATIVE: json_form["casus"] = "locative"; break;
-                                }
-
-                                json_form["plural"] = noun->plural;
-
-                                switch (noun->gender) {
-                                case GENDER_MASCULINE: json_form["gender"] = "masculine"; break;
-                                case GENDER_FEMININE: json_form["gender"] = "feminine"; break;
-                                case GENDER_NEUTER: json_form["gender"] = "neuter"; break;
-                                case GENDER_COMMON: json_form["gender"] = "common"; break;
-                                }
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_VERB: {
-                                json_form["part_of_speech"] = "verb";
-                                auto verb = (Verb*) form.get();
-
-                                switch (verb->tense) {
-                                case TENSE_PRESENT: json_form["tense"] = "present"; break;
-                                case TENSE_IMPERFECT: json_form["tense"] = "imperfect"; break;
-                                case TENSE_PERFECT: json_form["tense"] = "perfect"; break;
-                                case TENSE_PLUPERFECT: json_form["tense"] = "pluperfect"; break;
-                                case TENSE_FUTURE: json_form["tense"] = "future"; break;
-                                case TENSE_FUTURE_PERFECT: json_form["tense"] = "future_perfect"; break;
-                                }
-
-                                switch (verb->voice) {
-                                case VOICE_ACTIVE: json_form["voice"] = "active"; break;
-                                case VOICE_PASSIVE: json_form["voice"] = "passive"; break;
-                                }
-
-                                switch (verb->mood) {
-                                case MOOD_INDICATIVE: json_form["mood"] = "indicative"; break;
-                                case MOOD_SUBJUNCTIVE: json_form["mood"] = "subjunctive"; break;
-                                case MOOD_IMPERATIVE: json_form["mood"] = "imperative"; break;
-                                case MOOD_INFINITIVE: json_form["mood"] = "infinitive"; break;
-                                }
-
-                                json_form["plural"] = verb->plural;
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_PARTICIPLE: {
-                                json_form["part_of_speech"] = "participle";
-                                auto participle = (Participle*) form.get();
-
-                                switch (participle->casus) {
-                                case CASUS_NOMINATIVE: json_form["casus"] = "nominative"; break;
-                                case CASUS_GENITIVE: json_form["casus"] = "genitive"; break;
-                                case CASUS_DATIVE: json_form["casus"] = "dative"; break;
-                                case CASUS_ACCUSATIVE: json_form["casus"] = "accusative"; break;
-                                case CASUS_ABLATIVE: json_form["casus"] = "ablative"; break;
-                                case CASUS_VOCATIVE: json_form["casus"] = "vocative"; break;
-                                case CASUS_LOCATIVE: json_form["casus"] = "locative"; break;
-                                }
-
-                                json_form["plural"] = participle->plural;
-
-                                switch (participle->gender) {
-                                case GENDER_MASCULINE: json_form["gender"] = "masculine"; break;
-                                case GENDER_FEMININE: json_form["gender"] = "feminine"; break;
-                                case GENDER_NEUTER: json_form["gender"] = "neuter"; break;
-                                case GENDER_COMMON: json_form["gender"] = "common"; break;
-                                }
-
-                                switch (participle->tense) {
-                                case TENSE_PRESENT: json_form["tense"] = "present"; break;
-                                case TENSE_IMPERFECT: json_form["tense"] = "imperfect"; break;
-                                case TENSE_PERFECT: json_form["tense"] = "perfect"; break;
-                                case TENSE_PLUPERFECT: json_form["tense"] = "pluperfect"; break;
-                                case TENSE_FUTURE: json_form["tense"] = "future"; break;
-                                case TENSE_FUTURE_PERFECT: json_form["tense"] = "future_perfect"; break;
-                                }
-
-                                switch (participle->voice) {
-                                case VOICE_ACTIVE: json_form["voice"] = "active"; break;
-                                case VOICE_PASSIVE: json_form["voice"] = "passive"; break;
-                                }
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_SUPINE: {
-                                json_form["part_of_speech"] = "supine";
-                                auto supine = (Supine*) form.get();
-
-                                switch (supine->casus) {
-                                case CASUS_NOMINATIVE: json_form["casus"] = "nominative"; break;
-                                case CASUS_GENITIVE: json_form["casus"] = "genitive"; break;
-                                case CASUS_DATIVE: json_form["casus"] = "dative"; break;
-                                case CASUS_ACCUSATIVE: json_form["casus"] = "accusative"; break;
-                                case CASUS_ABLATIVE: json_form["casus"] = "ablative"; break;
-                                case CASUS_VOCATIVE: json_form["casus"] = "vocative"; break;
-                                case CASUS_LOCATIVE: json_form["casus"] = "locative"; break;
-                                }
-
-                                json_form["plural"] = supine->plural;
-
-                                switch (supine->gender) {
-                                case GENDER_MASCULINE: json_form["gender"] = "masculine"; break;
-                                case GENDER_FEMININE: json_form["gender"] = "feminine"; break;
-                                case GENDER_NEUTER: json_form["gender"] = "neuter"; break;
-                                case GENDER_COMMON: json_form["gender"] = "common"; break;
-                                }
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_ADJECTIVE: {
-                                json_form["part_of_speech"] = "adjective";
-                                auto adjective = (Adjective*) form.get();
-
-                                switch (adjective->casus) {
-                                case CASUS_NOMINATIVE: json_form["casus"] = "nominative"; break;
-                                case CASUS_GENITIVE: json_form["casus"] = "genitive"; break;
-                                case CASUS_DATIVE: json_form["casus"] = "dative"; break;
-                                case CASUS_ACCUSATIVE: json_form["casus"] = "accusative"; break;
-                                case CASUS_ABLATIVE: json_form["casus"] = "ablative"; break;
-                                case CASUS_VOCATIVE: json_form["casus"] = "vocative"; break;
-                                case CASUS_LOCATIVE: json_form["casus"] = "locative"; break;
-                                }
-
-                                json_form["plural"] = adjective->plural;
-
-                                switch (adjective->gender) {
-                                case GENDER_MASCULINE: json_form["gender"] = "masculine"; break;
-                                case GENDER_FEMININE: json_form["gender"] = "feminine"; break;
-                                case GENDER_NEUTER: json_form["gender"] = "neuter"; break;
-                                case GENDER_COMMON: json_form["gender"] = "common"; break;
-                                }
-
-                                switch (adjective->degree) {
-                                case DEGREE_POSITIVE: json_form["degree"] = "positive"; break;
-                                case DEGREE_COMPARATIVE: json_form["degree"] = "comparative"; break;
-                                case DEGREE_SUPERLATIVE: json_form["degree"] = "superlative"; break;
-                                }
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_ADVERB: {
-                                json_form["part_of_speech"] = "adverb";
-                                auto adverb = (Adverb*) form.get();
-
-                                switch (adverb->degree) {
-                                case DEGREE_POSITIVE: json_form["degree"] = "positive"; break;
-                                case DEGREE_COMPARATIVE: json_form["degree"] = "comparative"; break;
-                                case DEGREE_SUPERLATIVE: json_form["degree"] = "superlative"; break;
-                                }
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_CONJUNCTION: {
-                                json_form["part_of_speech"] = "conjunction";
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_PREPOSITION: {
-                                json_form["part_of_speech"] = "preposition";
-                                auto preposition = (Preposition*) form.get();
-
-                                switch (preposition->casus) {
-                                case CASUS_NOMINATIVE: json_form["casus"] = "nominative"; break;
-                                case CASUS_GENITIVE: json_form["casus"] = "genitive"; break;
-                                case CASUS_DATIVE: json_form["casus"] = "dative"; break;
-                                case CASUS_ACCUSATIVE: json_form["casus"] = "accusative"; break;
-                                case CASUS_ABLATIVE: json_form["casus"] = "ablative"; break;
-                                case CASUS_VOCATIVE: json_form["casus"] = "vocative"; break;
-                                case CASUS_LOCATIVE: json_form["casus"] = "locative"; break;
-                                }
-
-                                break;
-                            }
-
-                            case PART_OF_SPEECH_INTERJECTION: {
-                                json_form["part_of_speech"] = "interjection";
-                                break;
-                            }
-                            }
-
+                            json json_form = form->to_json();
                             json_form["english_equivalent"] = form->english_equivalent(variant.english_base);
-                            json_variant["forms"].push_back(json_form);
+                            json_variant["forms"].push_back(std::move(json_form));
                         }
 
                         resp.push_back(json_variant);
                     }
 
-                    return pw::HTTPResponse(200, resp.dump(4), {{"Content-Type", "application/json"}});
+                    return pw::HTTPResponse(200, resp.dump(), {{"Content-Type", "application/json"}});
                 } else {
                     return pw::HTTPResponse::make_basic(404);
                 }
@@ -345,12 +141,12 @@ int main() {
                     for (const auto& word : input_words) {
                         for (const auto& variant : word) {
                             if (!output_forms.empty()) {
-                                switch (output_forms.back().second->part_of_speech) {
+                                WordForm* previous_form = output_forms.back().second.get();
+                                switch (previous_form->part_of_speech) {
                                 case PART_OF_SPEECH_PREPOSITION: {
-                                    auto preposition = (Preposition*) output_forms.back().second.get();
                                     for (const auto& form : variant.forms) {
                                         auto noun = dynamic_cast<Noun*>(form.get());
-                                        if (noun && noun->casus == preposition->casus) { // Check for noun with matching case
+                                        if (noun && noun->casus == previous_form->get_casus()) { // Check for noun with matching case
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
@@ -359,10 +155,9 @@ int main() {
                                 }
 
                                 case PART_OF_SPEECH_NOUN: {
-                                    auto noun = (Noun*) output_forms.back().second.get();
                                     for (const auto& form : variant.forms) {
                                         auto adjective = dynamic_cast<Adjective*>(form.get());
-                                        if (adjective && adjective->plural == noun->plural) { // Check for adjective with matching number
+                                        if (adjective && adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
@@ -371,10 +166,9 @@ int main() {
                                 }
 
                                 case PART_OF_SPEECH_ADJECTIVE: {
-                                    auto previous_adjective = (Adjective*) output_forms.back().second.get();
                                     for (const auto& form : variant.forms) {
                                         auto adjective = dynamic_cast<Adjective*>(form.get());
-                                        if (adjective && adjective->plural == previous_adjective->plural) { // Check for adjective with matching number
+                                        if (adjective && adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
@@ -400,6 +194,7 @@ int main() {
                                             goto next_word;
                                         }
                                     }
+
                                     break;
 
                                 default:
@@ -413,8 +208,7 @@ int main() {
                                     // Check for subject
                                     if (subjects.size() <= objects.size()) {
                                         for (const auto& form : variant.forms) {
-                                            auto noun = (Noun*) form.get();
-                                            if (noun->casus == CASUS_NOMINATIVE) {
+                                            if (form->get_casus() == CASUS_NOMINATIVE) {
                                                 subjects.push_back(std::static_pointer_cast<Noun>(form));
                                                 output_forms.push_back({variant.english_base, form});
                                                 goto next_word;
@@ -424,8 +218,7 @@ int main() {
 
                                     // Check for object
                                     for (const auto& form : variant.forms) {
-                                        auto noun = (Noun*) form.get();
-                                        if (noun->casus == CASUS_ACCUSATIVE) {
+                                        if (form->get_casus() == CASUS_ACCUSATIVE) {
                                             objects.push_back(std::static_pointer_cast<Noun>(form));
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
@@ -436,8 +229,7 @@ int main() {
 
                                 case PART_OF_SPEECH_VERB:
                                     for (const auto& form : variant.forms) {
-                                        auto verb = (Verb*) form.get();
-                                        if (subjects.size() <= objects.size() || verb->plural == subjects.back()->plural) { // Check for verb with matching number
+                                        if (subjects.size() <= objects.size() || form->is_plural() == subjects.back()->plural) { // Check for verb with matching number
                                             verbs.push_back(std::static_pointer_cast<Verb>(form));
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
