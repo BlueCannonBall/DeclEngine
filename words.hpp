@@ -1,5 +1,6 @@
 #pragma once
 
+#include "json_fwd.hpp"
 #include <string>
 
 enum PartOfSpeech {
@@ -23,6 +24,7 @@ enum Casus {
     CASUS_ABLATIVE,
     CASUS_VOCATIVE,
     CASUS_LOCATIVE,
+    CASUS_NONE,
 };
 
 enum Gender {
@@ -30,12 +32,14 @@ enum Gender {
     GENDER_FEMININE,
     GENDER_NEUTER, // Not applicable to proper nouns
     GENDER_COMMON,
+    GENDER_NONE,
 };
 
 enum Degree {
     DEGREE_POSITIVE,
     DEGREE_COMPARATIVE,
     DEGREE_SUPERLATIVE,
+    DEGREE_NONE,
 };
 
 enum Tense {
@@ -45,11 +49,13 @@ enum Tense {
     TENSE_PLUPERFECT,
     TENSE_FUTURE,
     TENSE_FUTURE_PERFECT,
+    TENSE_NONE,
 };
 
 enum Voice {
     VOICE_ACTIVE,
     VOICE_PASSIVE,
+    VOICE_NONE,
 };
 
 enum Mood {
@@ -57,6 +63,7 @@ enum Mood {
     MOOD_SUBJUNCTIVE,
     MOOD_IMPERATIVE,
     MOOD_INFINITIVE,
+    MOOD_NONE,
 };
 
 typedef unsigned short Declension;
@@ -72,6 +79,18 @@ public:
 
     virtual ~WordForm() = default;
     virtual std::string english_equivalent(const std::string& english_base) const = 0;
+    virtual nlohmann::json to_json() const;
+
+    virtual Casus get_casus() const { return CASUS_NONE; }
+    virtual Gender get_gender() const { return GENDER_NONE; }
+    virtual Degree get_degree() const { return DEGREE_NONE; }
+    virtual Tense get_tense() const { return TENSE_NONE; }
+    virtual Voice get_voice() const { return VOICE_NONE; }
+    virtual Mood get_mood() const { return MOOD_NONE; }
+    virtual Declension get_declension() const { return 0; }
+    virtual Conjugation get_conjugation() const { return 0; }
+    virtual Person get_person() const { return 0; }
+    virtual bool is_plural() const { return false; }
 };
 
 class Noun : public WordForm {
@@ -91,6 +110,12 @@ public:
         gender(gender) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Declension get_declension() const override { return declension; }
+    bool is_plural() const override { return plural; }
 };
 
 class Verb : public WordForm {
@@ -114,6 +139,14 @@ public:
         plural(plural) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    Tense get_tense() const override { return tense; }
+    Voice get_voice() const override { return voice; }
+    Mood get_mood() const override { return mood; }
+    Conjugation get_conjugation() const override { return conjugation; }
+    Person get_person() const override { return person; }
+    bool is_plural() const override { return plural; }
 };
 
 class Participle : public WordForm {
@@ -137,6 +170,14 @@ public:
         voice(voice) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Tense get_tense() const override { return tense; }
+    Voice get_voice() const override { return voice; }
+    Conjugation get_conjugation() const override { return conjugation; }
+    bool is_plural() const override { return plural; }
 };
 
 class Supine : public WordForm {
@@ -156,6 +197,12 @@ public:
         gender(gender) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Conjugation get_conjugation() const override { return conjugation; }
+    bool is_plural() const override { return plural; }
 };
 
 class Adjective : public WordForm {
@@ -177,6 +224,13 @@ public:
         degree(degree) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Degree get_degree() const override { return degree; }
+    Declension get_declension() const override { return declension; }
+    bool is_plural() const override { return plural; }
 };
 
 class Adverb : public WordForm {
@@ -190,6 +244,9 @@ public:
         degree(degree) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    Degree get_degree() const override { return degree; }
 };
 
 class Pronoun : public Noun {
@@ -227,6 +284,10 @@ public:
     inline std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
     }
+
+    nlohmann::json to_json() const override;
+
+    Casus get_casus() const override { return casus; }
 };
 
 class Interjection : public WordForm {
