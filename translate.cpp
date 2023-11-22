@@ -1,12 +1,23 @@
 #include "Polyweb/string.hpp"
 #include "json.hpp"
 #include "words.hpp"
+#include <cctype>
 #include <fstream>
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
 
 using nlohmann::json;
+
+inline bool is_vowel(char c, bool include_y = false) {
+    c = tolower(c);
+    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || (include_y && c == 'y');
+}
+
+inline bool is_consonant(char c, bool include_y = true) {
+    c = tolower(c);
+    return c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u' && (include_y || c != 'y');
+}
 
 std::string Noun::english_equivalent(const std::string& english_base) const {
     static constexpr const char* prefixes[7] = {
@@ -352,19 +363,11 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     ret.back() = 'i';
                     ret += "ng";
                 } else {
-                    if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
-                            switch (c) {
-                            case 'a':
-                            case 'e':
-                            case 'i':
-                            case 'o':
-                            case 'u':
-                                return true;
-
-                            default:
-                                return false;
-                            }
-                        }) == 1) {
+                    if (english_base.size() >= 2 &&
+                        std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                            return is_vowel(c);
+                        }) == 1 &&
+                        is_vowel(english_base[english_base.size() - 2]) && is_consonant(english_base.back())) {
                         ret += ret.back();
                     }
                     ret += "ing";
@@ -384,19 +387,11 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                         break;
                     } else if (ret.back() == 'y') {
                         ret.back() = 'i';
-                    } else if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
-                                   switch (c) {
-                                   case 'a':
-                                   case 'e':
-                                   case 'i':
-                                   case 'o':
-                                   case 'u':
-                                       return true;
-
-                                   default:
-                                       return false;
-                                   }
-                               }) == 1) {
+                    } else if (english_base.size() >= 2 &&
+                               std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                                   return is_vowel(c);
+                               }) == 1 &&
+                               is_vowel(english_base[english_base.size() - 2]) && is_consonant(english_base.back())) {
                         ret += ret.back();
                     }
                     ret += "ed";
@@ -424,19 +419,11 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                         break;
                     } else if (ret.back() == 'y') {
                         ret.back() = 'i';
-                    } else if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
-                                   switch (c) {
-                                   case 'a':
-                                   case 'e':
-                                   case 'i':
-                                   case 'o':
-                                   case 'u':
-                                       return true;
-
-                                   default:
-                                       return false;
-                                   }
-                               }) == 1) {
+                    } else if (english_base.size() >= 2 &&
+                               std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                                   return is_vowel(c);
+                               }) == 1 &&
+                               is_vowel(english_base[english_base.size() - 2]) && is_consonant(english_base.back())) {
                         ret += ret.back();
                     }
                     ret += "ed";
@@ -462,19 +449,11 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                         break;
                     } else if (ret.back() == 'y') {
                         ret.back() = 'i';
-                    } else if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
-                                   switch (c) {
-                                   case 'a':
-                                   case 'e':
-                                   case 'i':
-                                   case 'o':
-                                   case 'u':
-                                       return true;
-
-                                   default:
-                                       return false;
-                                   }
-                               }) == 1) {
+                    } else if (english_base.size() >= 2 &&
+                               std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                                   return is_vowel(c);
+                               }) == 1 &&
+                               is_vowel(english_base[english_base.size() - 2]) && is_consonant(english_base.back())) {
                         ret += ret.back();
                     }
                     ret += "ed";
@@ -502,19 +481,11 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                 break;
             } else if (ret.back() == 'y') {
                 ret.back() = 'i';
-            } else if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
-                           switch (c) {
-                           case 'a':
-                           case 'e':
-                           case 'i':
-                           case 'o':
-                           case 'u':
-                               return true;
-
-                           default:
-                               return false;
-                           }
-                       }) == 1) {
+            } else if (english_base.size() >= 2 &&
+                       std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                           return is_vowel(c);
+                       }) == 1 &&
+                       is_vowel(english_base[english_base.size() - 2]) && is_consonant(english_base.back())) {
                 ret += ret.back();
             }
             ret += "ed";
@@ -550,19 +521,11 @@ std::string Participle::english_equivalent(const std::string& english_base) cons
         ret.back() = 'i';
         ret += "ng";
     } else {
-        if (std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
-                switch (c) {
-                case 'a':
-                case 'e':
-                case 'i':
-                case 'o':
-                case 'u':
-                    return true;
-
-                default:
-                    return false;
-                }
-            }) == 1) {
+        if (english_base.size() >= 2 &&
+            std::count_if(english_base.begin(), english_base.end() - 1, [](char c) {
+                return is_vowel(c);
+            }) == 1 &&
+            is_vowel(english_base[english_base.size() - 2]) && is_consonant(english_base.back())) {
             ret += ret.back();
         }
         ret += "ing";
