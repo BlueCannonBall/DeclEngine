@@ -2,7 +2,6 @@
 #include "Polyweb/string.hpp"
 #include "words.hpp"
 #include <algorithm>
-#include <boost/process.hpp>
 #include <cctype>
 #include <iterator>
 #include <memory>
@@ -98,10 +97,6 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         }
     }
 
-    boost::process::ipstream out;
-    boost::process::opstream in;
-    boost::process::child words("bin/words", ascii_word, boost::process::start_dir("whitakers-words"), boost::process::std_out > out, boost::process::std_in < in);
-
     auto range = internal_dictionary.equal_range(ascii_word);
     if (range.first != range.second) {
         std::transform(range.first, range.second, std::back_inserter(ret), [](const auto& entry) {
@@ -110,27 +105,44 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         return ret.size();
     }
 
-    for (WordVariant variant; out;) {
+    // Check if word is entirely composed of digits
+    bool is_all_digits = true;
+    for (char c : ascii_word) {
+        if (!isdigit(c)) {
+            is_all_digits = false;
+        }
+    }
+    if (is_all_digits) {
+        return 0;
+    }
+
+    thread_local WhitakersWords words;
+    words.out.ignore(std::numeric_limits<std::streamsize>::max(), '>');
+    words.in << ascii_word << std::endl;
+
+    bool last_line_empty = false;
+    for (WordVariant variant; words.out;) {
         std::string line;
-        std::getline(out, line, '\n');
+        std::getline(words.out, line, '\n');
         pw::string::trim_right(line);
         std::istringstream ss(line);
-        if (line == "Two words" ||
-            pw::string::ends_with(line, "UNKNOWN")) {
+        if (line.empty() && last_line_empty) {
+            break;
+        } else if (((line.empty() || line.front() == '*') && last_line_empty) ||
+                   line == "Two words" ||
+                   pw::string::ends_with(line, "UNKNOWN")) {
             break;
         } else if (pw::string::ends_with(line, "MORE - hit RETURN/ENTER to continue")) {
-            in << std::endl;
+            words.in << std::endl;
             continue;
         } else if (line.front() == ' ' || line.front() == '-') {
             continue;
         }
+        last_line_empty = line.empty() || line.front() == '*';
 
         std::string split_word;
         ss >> split_word;
-        split_word.erase(std::remove_if(split_word.begin(), split_word.end(), [](char c) {
-            return c == '.';
-        }),
-            split_word.end());
+        split_word.erase(std::remove(split_word.begin(), split_word.end(), '.'), split_word.end());
         if (!pw::string::iequals(split_word, ascii_word)) {
             if (!variant.forms.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
                 ss.seekg(0);
