@@ -153,28 +153,7 @@ json Supine::to_json() const {
 }
 
 json Adjective::to_json() const {
-    json ret = WordForm::to_json();
-
-    switch (casus) {
-    case CASUS_NOMINATIVE: ret["casus"] = "nominative"; break;
-    case CASUS_GENITIVE: ret["casus"] = "genitive"; break;
-    case CASUS_DATIVE: ret["casus"] = "dative"; break;
-    case CASUS_ACCUSATIVE: ret["casus"] = "accusative"; break;
-    case CASUS_ABLATIVE: ret["casus"] = "ablative"; break;
-    case CASUS_VOCATIVE: ret["casus"] = "vocative"; break;
-    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
-    default: throw std::logic_error("Invalid case");
-    }
-
-    ret["plural"] = plural;
-
-    switch (gender) {
-    case GENDER_MASCULINE: ret["gender"] = "masculine"; break;
-    case GENDER_FEMININE: ret["gender"] = "feminine"; break;
-    case GENDER_NEUTER: ret["gender"] = "neuter"; break;
-    case GENDER_COMMON: ret["gender"] = "common"; break;
-    default: throw std::logic_error("Invalid gender");
-    }
+    json ret = Noun::to_json();
 
     switch (degree) {
     case DEGREE_POSITIVE: ret["degree"] = "positive"; break;

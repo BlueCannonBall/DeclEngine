@@ -3,8 +3,10 @@
 #include "json.hpp"
 #include "words.hpp"
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -79,6 +81,16 @@ int main() {
 
                 std::vector<WordVariant> word;
                 if (query_dictionary(word_it->second, word)) {
+                    std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
+                        bool a_has_upper = std::find_if(a.english_base.begin(), a.english_base.end(), isupper) != a.english_base.end();
+                        bool b_has_upper = std::find_if(b.english_base.begin(), b.english_base.end(), isupper) != b.english_base.end();
+                        if (a_has_upper == b_has_upper) {
+                            return a.english_base.size() < b.english_base.size();
+                        } else {
+                            return b_has_upper;
+                        }
+                    });
+
                     json resp;
                     for (const auto& variant : word) {
                         json json_variant = {
@@ -86,11 +98,11 @@ int main() {
                             {"english_base", variant.english_base},
                         };
 
-                        for (const auto& form : variant.forms) {
-                            json json_form = form->to_json();
-                            json_form["english_equivalent"] = form->english_equivalent(variant.english_base);
-                            json_variant["forms"].push_back(std::move(json_form));
-                        }
+                        std::transform(variant.forms.begin(), variant.forms.end(), std::back_inserter(json_variant["forms"]), [&variant](const auto& form) {
+                            json ret = form->to_json();
+                            ret["english_equivalent"] = form->english_equivalent(variant.english_base);
+                            return ret;
+                        });
 
                         resp.push_back(json_variant);
                     }
@@ -112,22 +124,28 @@ int main() {
 
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
                 std::vector<std::vector<WordVariant>> input_words;
-                for (auto string_word : split_input_sentence) {
-                    std::vector<WordVariant> word;
 
-                    if (pw::string::ends_with(string_word, "que")) {
-                        string_word.erase(string_word.size() - 3);
-
-                        query_dictionary("que", word);
-                        std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
-                            return a.english_base.size() < b.english_base.size();
-                        });
-                        input_words.push_back(std::move(word));
+                for (auto it = split_input_sentence.begin(); it != split_input_sentence.end(); ++it) {
+                    if (pw::string::ends_with(*it, "que")) {
+                        it->erase(it->size() - 3);
+                        it = std::next(split_input_sentence.insert(it, "que"));
                     }
+                }
 
+                for (auto string_word : split_input_sentence) {
+                    // Remove punctuation for dictionary lookup
+                    string_word.erase(std::remove_if(string_word.begin(), string_word.end(), ispunct), string_word.end());
+
+                    std::vector<WordVariant> word;
                     if (query_dictionary(string_word, word)) {
                         std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
-                            return a.english_base.size() < b.english_base.size();
+                            bool a_has_upper = std::find_if(a.english_base.begin(), a.english_base.end(), isupper) != a.english_base.end();
+                            bool b_has_upper = std::find_if(b.english_base.begin(), b.english_base.end(), isupper) != b.english_base.end();
+                            if (a_has_upper == b_has_upper) {
+                                return a.english_base.size() < b.english_base.size();
+                            } else {
+                                return b_has_upper;
+                            }
                         });
                         input_words.push_back(std::move(word));
                     }
@@ -135,26 +153,27 @@ int main() {
 
                 std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
                 {
-                    std::vector<std::shared_ptr<Noun>> subjects;
-                    std::vector<std::shared_ptr<Verb>> verbs;
-                    std::vector<std::shared_ptr<Noun>> objects;
+                    std::vector<std::shared_ptr<WordForm>> subjects;
+                    std::vector<std::shared_ptr<WordForm>> verbs;
+                    std::vector<std::shared_ptr<WordForm>> objects;
                     for (const auto& word : input_words) {
                         for (const auto& variant : word) {
                             if (!output_forms.empty()) {
-                                WordForm* previous_form = output_forms.back().second.get();
+                                const std::string& previous_form_english_base = output_forms.back().first;
+                                const WordForm* previous_form = output_forms.back().second.get();
                                 switch (previous_form->part_of_speech) {
-                                case PART_OF_SPEECH_PREPOSITION: {
+                                case PART_OF_SPEECH_PREPOSITION:
                                     for (const auto& form : variant.forms) {
-                                        auto noun = dynamic_cast<Noun*>(form.get());
-                                        if (noun && noun->casus == previous_form->get_casus()) { // Check for noun with matching case
+                                        if (form->is_noun_like() && form->get_casus() == previous_form->get_casus()) { // Check for noun with matching case
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
                                     }
                                     break;
-                                }
 
-                                case PART_OF_SPEECH_NOUN: {
+                                case PART_OF_SPEECH_NOUN:
+                                case PART_OF_SPEECH_PRONOUN:
+                                case PART_OF_SPEECH_PARTICIPLE:
                                     for (const auto& form : variant.forms) {
                                         auto adjective = dynamic_cast<Adjective*>(form.get());
                                         if (adjective && adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
@@ -163,9 +182,19 @@ int main() {
                                         }
                                     }
                                     break;
-                                }
 
-                                case PART_OF_SPEECH_ADJECTIVE: {
+                                case PART_OF_SPEECH_VERB:
+                                    if (previous_form_english_base == "be") {
+                                        for (const auto& form : variant.forms) {
+                                            if (form->get_casus() == CASUS_NOMINATIVE || form->get_casus() == CASUS_ACCUSATIVE) {
+                                                output_forms.push_back({variant.english_base, form});
+                                                goto next_word;
+                                            }
+                                        }
+                                    }
+                                    break;
+
+                                case PART_OF_SPEECH_ADJECTIVE:
                                     for (const auto& form : variant.forms) {
                                         auto adjective = dynamic_cast<Adjective*>(form.get());
                                         if (adjective && adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
@@ -174,7 +203,6 @@ int main() {
                                         }
                                     }
                                     break;
-                                }
 
                                 case PART_OF_SPEECH_ADVERB:
                                     // Check for conjunction
@@ -188,8 +216,8 @@ int main() {
                                     // Check for verb
                                     for (const auto& form : variant.forms) {
                                         auto verb = dynamic_cast<Verb*>(form.get());
-                                        if (verb && (subjects.size() <= verbs.size() || verb->plural == subjects.back()->plural)) { // Check for verb with matching number
-                                            verbs.push_back(std::static_pointer_cast<Verb>(form));
+                                        if (verb && (subjects.size() <= verbs.size() || verb->plural == subjects.back()->is_plural())) { // Check for verb with matching number
+                                            verbs.push_back(form);
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
@@ -198,52 +226,54 @@ int main() {
                                     break;
 
                                 default:
-                                    goto skip_narrowing;
+                                    break;
                                 }
-                            } else {
-                            skip_narrowing:
-                                switch (variant.part_of_speech()) {
-                                case PART_OF_SPEECH_NOUN:
-                                case PART_OF_SPEECH_PRONOUN:
-                                    // Check for subject
-                                    if (subjects.size() <= objects.size()) {
-                                        for (const auto& form : variant.forms) {
-                                            if (form->get_casus() == CASUS_NOMINATIVE) {
-                                                subjects.push_back(std::static_pointer_cast<Noun>(form));
-                                                output_forms.push_back({variant.english_base, form});
-                                                goto next_word;
-                                            }
-                                        }
-                                    }
+                            }
 
-                                    // Check for object
+                            switch (variant.part_of_speech()) {
+                            case PART_OF_SPEECH_NOUN:
+                            case PART_OF_SPEECH_PRONOUN:
+                            case PART_OF_SPEECH_PARTICIPLE:
+                                // Check for subject
+                                if (subjects.size() <= objects.size()) {
                                     for (const auto& form : variant.forms) {
-                                        if (form->get_casus() == CASUS_ACCUSATIVE) {
-                                            objects.push_back(std::static_pointer_cast<Noun>(form));
+                                        if (form->get_casus() == CASUS_NOMINATIVE) {
+                                            subjects.push_back(form);
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
                                     }
-
-                                    break;
-
-                                case PART_OF_SPEECH_VERB:
-                                    for (const auto& form : variant.forms) {
-                                        if (subjects.size() <= objects.size() || form->is_plural() == subjects.back()->plural) { // Check for verb with matching number
-                                            verbs.push_back(std::static_pointer_cast<Verb>(form));
-                                            output_forms.push_back({variant.english_base, form});
-                                            goto next_word;
-                                        }
-                                    }
-                                    break;
-
-                                case PART_OF_SPEECH_ADVERB:
-                                    output_forms.push_back({variant.english_base, variant.forms.front()});
-                                    goto next_word;
-
-                                default:
-                                    break;
                                 }
+
+                            case PART_OF_SPEECH_ADJECTIVE:
+                                // Check for object
+                                for (const auto& form : variant.forms) {
+                                    if (form->get_casus() == CASUS_ACCUSATIVE ||
+                                        (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE && form->get_casus() == CASUS_NOMINATIVE)) {
+                                        objects.push_back(form);
+                                        output_forms.push_back({variant.english_base, form});
+                                        goto next_word;
+                                    }
+                                }
+
+                                break;
+
+                            case PART_OF_SPEECH_VERB:
+                                for (const auto& form : variant.forms) {
+                                    if (subjects.size() <= objects.size() || form->is_plural() == subjects.back()->is_plural()) { // Check for verb with matching number
+                                        verbs.push_back(form);
+                                        output_forms.push_back({variant.english_base, form});
+                                        goto next_word;
+                                    }
+                                }
+                                break;
+
+                            case PART_OF_SPEECH_ADVERB:
+                                output_forms.push_back({variant.english_base, variant.forms.front()});
+                                goto next_word;
+
+                            default:
+                                break;
                             }
                         }
 
@@ -259,10 +289,8 @@ int main() {
                     done = true;
                     for (size_t i = 1; i < output_forms.size(); ++i) {
                         if (output_forms[i].second->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
-                            output_forms[i - 1].second->part_of_speech == PART_OF_SPEECH_NOUN) {
-                            auto adjective = (Adjective*) output_forms[i].second.get();
-                            auto noun = (Noun*) output_forms[i - 1].second.get();
-                            if (adjective->casus == noun->casus) {
+                            output_forms[i - 1].second->is_noun_like()) {
+                            if (output_forms[i].second->get_casus() == output_forms[i - 1].second->get_casus()) {
                                 std::swap(output_forms[i], output_forms[i - 1]);
                                 done = false;
                                 break;
@@ -271,20 +299,31 @@ int main() {
                     }
                 } while (!done);
 
-                std::string output_sentence = output_forms.front().second->english_equivalent(output_forms.front().first);
-                for (size_t i = 1; i < output_forms.size(); ++i) {
-                    output_sentence.push_back(' ');
-                    output_sentence += output_forms[i].second->english_equivalent(output_forms[i].first);
+                std::string output_sentence;
+                for (size_t i = 0; i < output_forms.size(); ++i) {
+                    std::string beginning_punctuation;
+                    std::string ending_punctuation;
+                    for (size_t j = 0; j < split_input_sentence[i].size() && ispunct(split_input_sentence[i][j]); ++j) {
+                        beginning_punctuation.push_back(split_input_sentence[i][j]);
+                    }
+                    for (size_t j = split_input_sentence[i].size(); j-- > 0 && ispunct(split_input_sentence[i][j]);) {
+                        ending_punctuation.insert(ending_punctuation.begin(), split_input_sentence[i][j]);
+                    }
+
+                    if (i) {
+                        output_sentence += "<sep>";
+                    }
+                    output_sentence += beginning_punctuation + output_forms[i].second->english_equivalent(output_forms[i].first) + ending_punctuation;
                 }
 
-                std::vector<std::string> split_output_sentence = pw::string::split(output_sentence, ' ');
-                split_output_sentence.erase(std::unique(split_output_sentence.begin(), split_output_sentence.end()), split_output_sentence.end());
+                // std::vector<std::string> split_output_sentence = pw::string::split(output_sentence, ' ');
+                // split_output_sentence.erase(std::unique(split_output_sentence.begin(), split_output_sentence.end()), split_output_sentence.end());
 
-                output_sentence = split_output_sentence.front();
-                for (size_t i = 1; i < split_output_sentence.size(); ++i) {
-                    output_sentence.push_back(' ');
-                    output_sentence += split_output_sentence[i];
-                }
+                // output_sentence = split_output_sentence.front();
+                // for (size_t i = 1; i < split_output_sentence.size(); ++i) {
+                //     output_sentence.push_back(' ');
+                //     output_sentence += split_output_sentence[i];
+                // }
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
             },
