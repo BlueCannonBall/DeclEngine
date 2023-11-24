@@ -1,6 +1,7 @@
 #pragma once
 
 #include "words.hpp"
+#include <boost/process.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -25,6 +26,16 @@ struct WordVariant {
     PartOfSpeech part_of_speech() const {
         return forms.front()->part_of_speech;
     }
+};
+
+class WhitakersWords {
+public:
+    boost::process::ipstream out;
+    boost::process::opstream in;
+    boost::process::child child;
+
+    WhitakersWords(const std::string& binary = "bin/words", const std::string& start_dir = "whitakers-words"):
+        child(binary, boost::process::start_dir(start_dir), boost::process::std_out > out, boost::process::std_in < in) {}
 };
 
 std::string remove_accents(const std::string& str);

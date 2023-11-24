@@ -4,6 +4,7 @@
 #include "words.hpp"
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -121,6 +122,8 @@ int main() {
                 if ((input_sentence_it = req.query_parameters->find("sentence")) == req.query_parameters->end()) {
                     return pw::HTTPResponse::make_basic(400);
                 }
+
+                auto start_time = std::chrono::steady_clock::now();
 
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
                 std::vector<std::vector<WordVariant>> input_words;
@@ -311,7 +314,19 @@ int main() {
                     }
 
                     if (i) {
-                        output_sentence += "<sep>";
+                        output_sentence += "<SEP>";
+                    }
+                    if (output_forms[i].second->is_noun_like()) {
+                        switch (output_forms[i].second->get_casus()) {
+                        case CASUS_NOMINATIVE: output_sentence += "<NOM>"; break;
+                        case CASUS_GENITIVE: output_sentence += "<GEN>"; break;
+                        case CASUS_DATIVE: output_sentence += "<DAT>"; break;
+                        case CASUS_ACCUSATIVE: output_sentence += "<ACC>"; break;
+                        case CASUS_ABLATIVE: output_sentence += "<ABL>"; break;
+                        case CASUS_VOCATIVE: output_sentence += "<VOC>"; break;
+                        case CASUS_LOCATIVE: output_sentence += "<LOC>"; break;
+                        default: throw std::logic_error("Invalid case");
+                        }
                     }
                     output_sentence += beginning_punctuation + output_forms[i].second->english_equivalent(output_forms[i].first) + ending_punctuation;
                 }
@@ -324,6 +339,9 @@ int main() {
                 //     output_sentence.push_back(' ');
                 //     output_sentence += split_output_sentence[i];
                 // }
+
+                auto end_time = std::chrono::steady_clock::now();
+                std::cerr << "Sentence translation time: " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.f << std::endl;
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
             },
