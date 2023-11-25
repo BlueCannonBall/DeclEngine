@@ -7,9 +7,6 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
-#include <unicode/translit.h>
-#include <unicode/unistr.h>
-#include <unicode/utypes.h>
 #include <unordered_map>
 
 struct CaseInsensitiveComparer {
@@ -75,21 +72,30 @@ const std::unordered_multimap<std::string, const WordVariant, CaseInsensitiveHas
     },
 };
 
-std::string remove_accents(const std::string& str) {
-    icu::UnicodeString unicode_str = icu::UnicodeString::fromUTF8(str);
+std::string WhitakersWords::remove_accents(const std::string& str) {
+    locale_t old_locale = uselocale(us_locale);
 
-    UErrorCode status = U_ZERO_ERROR;
-    icu::Transliterator* transliterator = icu::Transliterator::createInstance("NFD; [:Nonspacing Mark:] Remove; NFC", UTRANS_FORWARD, status);
-    transliterator->transliterate(unicode_str);
+    char input[str.size()];
+    memcpy(input, str.data(), str.size());
+    char* input_ptr = input;
+    size_t input_size = str.size();
 
-    std::string ret;
-    unicode_str.toUTF8String(ret);
-    return ret;
+    char output[str.size()];
+    char* output_ptr = output;
+    size_t output_size = str.size();
+
+    assert(iconv(cd, &input_ptr, &input_size, &output_ptr, &output_size) != (size_t) -1);
+
+    uselocale(old_locale);
+    return std::string(output, output_ptr);
 }
 
 size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) {
-    std::string ascii_word = remove_accents(word);
-    for (char& c : ascii_word) { // Remove J
+    thread_local WhitakersWords words;
+
+    // Remove accents and Js
+    std::string ascii_word = words.remove_accents(word);
+    for (char& c : ascii_word) {
         if (c == 'j') {
             c = 'i';
         } else if (c == 'J') {
@@ -116,7 +122,7 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         return 0;
     }
 
-    thread_local WhitakersWords words;
+    // Reset Whitaker's Words state
     words.out.ignore(std::numeric_limits<std::streamsize>::max(), '>');
     words.in << ascii_word << std::endl;
 

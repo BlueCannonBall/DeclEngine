@@ -5,8 +5,8 @@ if len(sys.argv) < 3:
     print("Error: Too few arguments", file=sys.stderr)
     sys.exit(1)
 
-input_dataset = open(sys.argv[1], 'r')
-output_dataset = open(sys.argv[2], 'w')
+input_dataset = open(sys.argv[1], "rt", buffering=1)
+output_dataset = open(sys.argv[2], "wt", buffering=1)
 
 i = 0
 while True:

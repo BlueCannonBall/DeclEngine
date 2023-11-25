@@ -2,7 +2,9 @@
 
 #include "words.hpp"
 #include <boost/process.hpp>
+#include <clocale>
 #include <cstddef>
+#include <iconv.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,9 +36,18 @@ public:
     boost::process::opstream in;
     boost::process::child child;
 
+    locale_t us_locale = newlocale(LC_CTYPE_MASK, "en_US.utf8", nullptr);
+    iconv_t cd = iconv_open("ASCII//TRANSLIT", "UTF-8");
+
     WhitakersWords(const std::string& binary = "bin/words", const std::string& start_dir = "whitakers-words"):
         child(binary, boost::process::start_dir(start_dir), boost::process::std_out > out, boost::process::std_in < in) {}
+
+    ~WhitakersWords() {
+        iconv_close(cd);
+        freelocale(us_locale);
+    }
+
+    std::string remove_accents(const std::string& str);
 };
 
-std::string remove_accents(const std::string& str);
 size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret);
