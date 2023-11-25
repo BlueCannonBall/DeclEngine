@@ -4,7 +4,6 @@
 #include "words.hpp"
 #include <algorithm>
 #include <cctype>
-#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -122,8 +121,6 @@ int main() {
                 if ((input_sentence_it = req.query_parameters->find("sentence")) == req.query_parameters->end()) {
                     return pw::HTTPResponse::make_basic(400);
                 }
-
-                auto start_time = std::chrono::steady_clock::now();
 
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
                 std::vector<std::vector<WordVariant>> input_words;
@@ -339,9 +336,6 @@ int main() {
                 //     output_sentence.push_back(' ');
                 //     output_sentence += split_output_sentence[i];
                 // }
-
-                auto end_time = std::chrono::steady_clock::now();
-                std::cerr << "Sentence translation time: " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.f << std::endl;
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
             },
