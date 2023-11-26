@@ -328,12 +328,13 @@ int main(int argc, char* argv[]) {
                     done = true;
                     for (size_t i = 1; i < output_forms.size(); ++i) {
                         if (output_forms[i].second->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
-                            output_forms[i - 1].second->is_noun_like()) {
-                            if (output_forms[i].second->get_casus() == output_forms[i - 1].second->get_casus()) {
-                                std::swap(output_forms[i], output_forms[i - 1]);
-                                done = false;
-                                break;
-                            }
+                            output_forms[i - 1].second->is_noun_like() &&
+                            output_forms[i].second->get_casus() == output_forms[i - 1].second->get_casus() &&
+                            output_forms[i].second->is_plural() == output_forms[i - 1].second->is_plural() &&
+                            output_forms[i].second->get_gender() == output_forms[i - 1].second->get_gender()) {
+                            std::swap(output_forms[i], output_forms[i - 1]);
+                            done = false;
+                            break;
                         }
                     }
                 } while (!done);
