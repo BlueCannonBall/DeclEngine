@@ -32,8 +32,8 @@ json Noun::to_json() const {
     case CASUS_DATIVE: ret["casus"] = "dative"; break;
     case CASUS_ACCUSATIVE: ret["casus"] = "accusative"; break;
     case CASUS_ABLATIVE: ret["casus"] = "ablative"; break;
-    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     case CASUS_VOCATIVE: ret["casus"] = "vocative"; break;
+    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     default: throw std::logic_error("Invalid case");
     }
 
@@ -91,8 +91,8 @@ json Participle::to_json() const {
     case CASUS_DATIVE: ret["casus"] = "dative"; break;
     case CASUS_ACCUSATIVE: ret["casus"] = "accusative"; break;
     case CASUS_ABLATIVE: ret["casus"] = "ablative"; break;
-    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     case CASUS_VOCATIVE: ret["casus"] = "vocative"; break;
+    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     default: throw std::logic_error("Invalid case");
     }
 
@@ -134,8 +134,8 @@ json Supine::to_json() const {
     case CASUS_DATIVE: ret["casus"] = "dative"; break;
     case CASUS_ACCUSATIVE: ret["casus"] = "accusative"; break;
     case CASUS_ABLATIVE: ret["casus"] = "ablative"; break;
-    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     case CASUS_VOCATIVE: ret["casus"] = "vocative"; break;
+    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     default: throw std::logic_error("Invalid case");
     }
 
@@ -187,8 +187,8 @@ json Preposition::to_json() const {
     case CASUS_DATIVE: ret["casus"] = "dative"; break;
     case CASUS_ACCUSATIVE: ret["casus"] = "accusative"; break;
     case CASUS_ABLATIVE: ret["casus"] = "ablative"; break;
-    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     case CASUS_VOCATIVE: ret["casus"] = "vocative"; break;
+    case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     default: throw std::logic_error("Invalid case");
     }
 
