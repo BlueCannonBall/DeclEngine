@@ -362,6 +362,10 @@ int main(int argc, char* argv[]) {
                         case CASUS_LOCATIVE: output_sentence += "<LOC>"; break;
                         default: throw std::logic_error("Invalid case");
                         }
+
+                        if (output_forms[i].second->part_of_speech == PART_OF_SPEECH_PARTICIPLE) {
+                            output_sentence += "<PAR>";
+                        }
                     } else if (auto verb = dynamic_cast<Verb*>(output_forms[i].second.get())) {
                         switch (verb->voice) {
                         case VOICE_ACTIVE: output_sentence += "<ACT>"; break;
