@@ -13,7 +13,9 @@
 
 using nlohmann::json;
 
-int main() {
+int main(int argc, char* argv[]) {
+    std::string port = argc >= 2 ? argv[1] : "8000";
+
     std::ofstream settings("whitakers-words/WORD.MOD");
     settings << "TRIM_OUTPUT                       Y\n"
                 "HAVE_OUTPUT_FILE                  N\n"
@@ -174,13 +176,49 @@ int main() {
                                 case PART_OF_SPEECH_NOUN:
                                 case PART_OF_SPEECH_PRONOUN:
                                 case PART_OF_SPEECH_PARTICIPLE:
+                                    // Check for genetive noun
                                     for (const auto& form : variant.forms) {
-                                        auto adjective = dynamic_cast<Adjective*>(form.get());
-                                        if (adjective && adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_GENITIVE) {
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
                                     }
+
+                                    // Check for ablative noun
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_ABLATIVE) {
+                                            output_forms.push_back({variant.english_base, form});
+                                            goto next_word;
+                                        }
+                                    }
+
+                                    // Check for dative noun
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_DATIVE) {
+                                            output_forms.push_back({variant.english_base, form});
+                                            goto next_word;
+                                        }
+                                    }
+
+                                    // Check for locative noun
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_LOCATIVE) {
+                                            output_forms.push_back({variant.english_base, form});
+                                            goto next_word;
+                                        }
+                                    }
+
+                                    // Check for adjective
+                                    for (const auto& form : variant.forms) {
+                                        auto adjective = dynamic_cast<Adjective*>(form.get());
+                                        if (adjective &&
+                                            adjective->casus == previous_form->get_casus() &&
+                                            adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
+                                            output_forms.push_back({variant.english_base, form});
+                                            goto next_word;
+                                        }
+                                    }
+
                                     break;
 
                                 case PART_OF_SPEECH_VERB:
@@ -324,6 +362,12 @@ int main() {
                         case CASUS_LOCATIVE: output_sentence += "<LOC>"; break;
                         default: throw std::logic_error("Invalid case");
                         }
+                    } else if (auto verb = dynamic_cast<Verb*>(output_forms[i].second.get())) {
+                        switch (verb->voice) {
+                        case VOICE_ACTIVE: output_sentence += "<ACT>"; break;
+                        case VOICE_PASSIVE: output_sentence += "<PAS>"; break;
+                        default: throw std::logic_error("Invalid voice");
+                        }
                     }
                     output_sentence += beginning_punctuation + output_forms[i].second->english_equivalent(output_forms[i].first) + ending_punctuation;
                 }
@@ -341,7 +385,7 @@ int main() {
             },
         });
 
-    if (server->bind("0.0.0.0", 8000) == PN_ERROR) {
+    if (server->bind("0.0.0.0", port) == PN_ERROR) {
         std::cerr << "Error: " << pn::universal_strerror() << std::endl;
         return 1;
     }
