@@ -213,7 +213,8 @@ int main(int argc, char* argv[]) {
                                         auto adjective = dynamic_cast<Adjective*>(form.get());
                                         if (adjective &&
                                             adjective->casus == previous_form->get_casus() &&
-                                            adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
+                                            adjective->plural == previous_form->is_plural() &&
+                                            adjective->gender == previous_form->get_gender()) { // Check for adjective with matching number
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }

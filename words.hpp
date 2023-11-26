@@ -30,10 +30,18 @@ enum Casus {
 enum Gender {
     GENDER_MASCULINE,
     GENDER_FEMININE,
-    GENDER_NEUTER, // Not applicable to proper nouns
+    GENDER_NEUTER,
     GENDER_COMMON,
     GENDER_NONE,
 };
+
+inline bool operator==(Gender a, Gender b) {
+    return (int) a == b || (int) a == GENDER_COMMON || (int) b == GENDER_COMMON;
+}
+
+inline bool operator!=(Gender a, Gender b) {
+    return (int) a != GENDER_COMMON && (int) b != GENDER_COMMON && (int) a != b;
+}
 
 enum Degree {
     DEGREE_POSITIVE,
