@@ -27,8 +27,8 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
         "to/for ",
         nullptr,
         nullptr,
-        "at ",
         "O ",
+        "at ",
     };
 
     std::string ret;
@@ -672,8 +672,8 @@ std::string Pronoun::english_equivalent(const std::string& english_base) const {
         "to/for ",
         nullptr,
         nullptr,
-        "at ",
         "O ",
+        "at ",
     };
 
     switch (declension) {
