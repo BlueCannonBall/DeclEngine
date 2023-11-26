@@ -320,8 +320,8 @@ int main() {
                         case CASUS_DATIVE: output_sentence += "<DAT>"; break;
                         case CASUS_ACCUSATIVE: output_sentence += "<ACC>"; break;
                         case CASUS_ABLATIVE: output_sentence += "<ABL>"; break;
-                        case CASUS_VOCATIVE: output_sentence += "<VOC>"; break;
                         case CASUS_LOCATIVE: output_sentence += "<LOC>"; break;
+                        case CASUS_VOCATIVE: output_sentence += "<VOC>"; break;
                         default: throw std::logic_error("Invalid case");
                         }
                     }
