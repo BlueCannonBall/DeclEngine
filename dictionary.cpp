@@ -54,6 +54,15 @@ const std::unordered_multimap<std::string, const WordVariant, CaseInsensitiveHas
         },
     },
     {
+        "pro",
+        {
+            .forms = {
+                std::make_shared<Preposition>(CASUS_ABLATIVE),
+            },
+            .english_base = "for",
+        },
+    },
+    {
         "rapide",
         {
             .forms = {
