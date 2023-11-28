@@ -2,7 +2,7 @@
 Providing powerful symbolic analysis of Latin words and sentences backed by rock-solid computational intelligence. ✨
 
 ## Usage
-See `test.py` for a simple way to test and query the engine in the command line. Below the engine is queried manually using the `curl` command. Make sure to execute the engine in the project's root directory.
+See `test.py` for a simple way to test and query the engine in the command line. In the example below, the engine is queried manually using the `curl` command. Make sure to execute the engine in the project's root directory.
 ```sh
 $ curl "http://localhost:8000/word_info?word=amat"
 [
