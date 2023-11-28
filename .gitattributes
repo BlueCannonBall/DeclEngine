@@ -9,6 +9,6 @@
 *.clang-format filter=lfs diff=lfs merge=lfs -text
 *.py filter=lfs diff=lfs merge=lfs -text
 *.json filter=lfs diff=lfs merge=lfs -text
-* !text !filter !merge !diff
 /LICENSE filter=lfs diff=lfs merge=lfs -text
+* !text !filter !merge !diff
 *.toml filter=lfs diff=lfs merge=lfs -text
