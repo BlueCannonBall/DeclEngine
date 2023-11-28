@@ -6,6 +6,7 @@
 #include <iterator>
 #include <memory>
 #include <ostream>
+#include <regex>
 #include <sstream>
 #include <unordered_map>
 
@@ -130,8 +131,10 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
     for (WordVariant variant; words.out;) {
         std::string line;
         std::getline(words.out, line, '\n');
-        pw::string::trim_right(line);
-        std::istringstream ss(line);
+
+        static std::regex comments_re("(\\(.*\\))|(\\[.*\\])", std::regex_constants::optimize);
+        line = std::regex_replace(pw::string::trim_right_copy(line), comments_re, "");
+
         if (line.empty() && last_line_empty) {
             break;
         } else if (((line.empty() || line.front() == '*') && last_line_empty) ||
@@ -146,18 +149,32 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         }
         last_line_empty = line.empty() || line.front() == '*';
 
+        std::istringstream ss(line);
+
         std::string split_word;
         ss >> split_word;
         split_word.erase(std::remove(split_word.begin(), split_word.end(), '.'), split_word.end());
         if (!pw::string::iequals(split_word, ascii_word)) {
             if (!variant.forms.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
-                ss.seekg(0);
-                for (char c; ss.get(c) && !ispunct(c);) {
-                    variant.english_base.push_back(c);
-                }
+                std::string first_english_base;
 
-                pw::string::trim_right(variant.english_base);
+                ss.seekg(0);
+                do {
+                    variant.english_base.clear();
+                    for (char c; ss.get(c) && !ispunct(c);) {
+                        variant.english_base.push_back(c);
+                    }
+
+                    pw::string::trim(variant.english_base);
+                    if (first_english_base.empty() && !variant.english_base.empty()) {
+                        first_english_base = variant.english_base;
+                    }
+                } while (ss && std::find_if(variant.english_base.begin(), variant.english_base.end(), isspace) != variant.english_base.end());
+
                 if (!variant.english_base.empty()) {
+                    ret.push_back(std::move(variant));
+                } else if (!first_english_base.empty()) {
+                    variant.english_base = first_english_base;
                     ret.push_back(std::move(variant));
                 }
             }

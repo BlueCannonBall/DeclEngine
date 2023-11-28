@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
                 std::vector<std::vector<WordVariant>> input_words;
 
                 for (auto it = split_input_sentence.begin(); it != split_input_sentence.end(); ++it) {
-                    if (pw::string::ends_with(*it, "que")) {
+                    if (!pw::string::iequals(*it, "quoque") && pw::string::ends_with(*it, "que")) {
                         it->erase(it->size() - 3);
                         it = std::next(split_input_sentence.insert(it, "que"));
                     }
@@ -210,11 +210,11 @@ int main(int argc, char* argv[]) {
 
                                     // Check for adjective
                                     for (const auto& form : variant.forms) {
-                                        auto adjective = dynamic_cast<Adjective*>(form.get());
-                                        if (adjective &&
+                                        Adjective* adjective;
+                                        if ((adjective = dynamic_cast<Adjective*>(form.get())) &&
                                             adjective->casus == previous_form->get_casus() &&
                                             adjective->plural == previous_form->is_plural() &&
-                                            adjective->gender == previous_form->get_gender()) { // Check for adjective with matching number
+                                            adjective->gender == previous_form->get_gender()) {
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
@@ -235,8 +235,8 @@ int main(int argc, char* argv[]) {
 
                                 case PART_OF_SPEECH_ADJECTIVE:
                                     for (const auto& form : variant.forms) {
-                                        auto adjective = dynamic_cast<Adjective*>(form.get());
-                                        if (adjective && adjective->plural == previous_form->is_plural()) { // Check for adjective with matching number
+                                        Adjective* adjective;
+                                        if ((adjective = dynamic_cast<Adjective*>(form.get())) && adjective->plural == previous_form->is_plural()) {
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
                                         }
@@ -254,8 +254,9 @@ int main(int argc, char* argv[]) {
 
                                     // Check for verb
                                     for (const auto& form : variant.forms) {
-                                        auto verb = dynamic_cast<Verb*>(form.get());
-                                        if (verb && (subjects.size() <= verbs.size() || verb->plural == subjects.back()->is_plural())) { // Check for verb with matching number
+                                        Verb* verb;
+                                        if ((verb = dynamic_cast<Verb*>(form.get())) &&
+                                            (subjects.size() <= verbs.size() || verb->plural == subjects.back()->is_plural())) { // Check for verb with matching number
                                             verbs.push_back(form);
                                             output_forms.push_back({variant.english_base, form});
                                             goto next_word;
@@ -269,50 +270,44 @@ int main(int argc, char* argv[]) {
                                 }
                             }
 
-                            switch (variant.part_of_speech()) {
-                            case PART_OF_SPEECH_NOUN:
-                            case PART_OF_SPEECH_PRONOUN:
-                            case PART_OF_SPEECH_PARTICIPLE:
-                                // Check for subject
-                                if (subjects.size() <= objects.size()) {
-                                    for (const auto& form : variant.forms) {
-                                        if (form->get_casus() == CASUS_NOMINATIVE) {
-                                            subjects.push_back(form);
-                                            output_forms.push_back({variant.english_base, form});
-                                            goto next_word;
-                                        }
-                                    }
-                                }
-
-                            case PART_OF_SPEECH_ADJECTIVE:
-                                // Check for object
+                            // Check for subject
+                            if (subjects.size() <= objects.size()) {
                                 for (const auto& form : variant.forms) {
-                                    if (form->get_casus() == CASUS_ACCUSATIVE ||
-                                        (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE && form->get_casus() == CASUS_NOMINATIVE)) {
-                                        objects.push_back(form);
+                                    if (form->is_noun_like() && form->get_casus() == CASUS_NOMINATIVE) {
+                                        subjects.push_back(form);
                                         output_forms.push_back({variant.english_base, form});
                                         goto next_word;
                                     }
                                 }
+                            }
 
-                                break;
-
-                            case PART_OF_SPEECH_VERB:
-                                for (const auto& form : variant.forms) {
-                                    if (subjects.size() <= objects.size() || form->is_plural() == subjects.back()->is_plural()) { // Check for verb with matching number
-                                        verbs.push_back(form);
-                                        output_forms.push_back({variant.english_base, form});
-                                        goto next_word;
-                                    }
+                            // Check for object
+                            for (const auto& form : variant.forms) {
+                                if ((form->is_noun_like() || form->part_of_speech == PART_OF_SPEECH_ADJECTIVE) &&
+                                    (form->get_casus() == CASUS_ACCUSATIVE ||
+                                        (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE && form->get_casus() == CASUS_NOMINATIVE))) {
+                                    objects.push_back(form);
+                                    output_forms.push_back({variant.english_base, form});
+                                    goto next_word;
                                 }
-                                break;
+                            }
 
-                            case PART_OF_SPEECH_ADVERB:
+                            // Check for verb
+                            for (const auto& form : variant.forms) {
+                                Verb* verb;
+                                if ((verb = dynamic_cast<Verb*>(form.get())) &&
+                                    (subjects.size() <= objects.size() || verb->plural == subjects.back()->is_plural())) { // Check for verb with matching number
+                                    verbs.push_back(form);
+                                    output_forms.push_back({variant.english_base, form});
+                                    goto next_word;
+                                }
+                            }
+
+                            // Prioritize certain other parts of speech
+                            if (variant.part_of_speech() == PART_OF_SPEECH_ADVERB ||
+                                variant.part_of_speech() == PART_OF_SPEECH_PREPOSITION) {
                                 output_forms.push_back({variant.english_base, variant.forms.front()});
                                 goto next_word;
-
-                            default:
-                                break;
                             }
                         }
 

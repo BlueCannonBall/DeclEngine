@@ -20,10 +20,10 @@ while True:
         output_dataset.write(f"{dirty_english}\t{clean_english}\n")
 
         i += 1
-        if i % 25 == 0:
+        if i % 100 == 0:
             print(f"Done with {i} sentence pairs")
     else:
-        if i % 25 != 0:
+        if i % 100 != 0:
             print(f"Done with {i}/{i} sentence pairs")
         break
 
