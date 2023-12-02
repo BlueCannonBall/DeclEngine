@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++14 -O3 -pthread
+CXXFLAGS = -Wall -std=c++14 -Ofast -pthread
 LDLIBS = -lcrypto
 HEADERS = $(shell find . -name "*.hpp")
 OBJDIR = obj
