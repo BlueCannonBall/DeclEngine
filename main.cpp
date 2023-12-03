@@ -181,23 +181,6 @@ int main(int argc, char* argv[]) {
                     ++string_word_it;
                 }
 
-                // for (auto string_word : split_input_sentence) {
-                //     std::vector<WordVariant> word;
-                //     if (query_dictionary(string_word, word)) {
-                //         std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
-                //             bool a_has_upper = std::find_if(a.english_base.begin(), a.english_base.end(), isupper) != a.english_base.end();
-                //             bool b_has_upper = std::find_if(b.english_base.begin(), b.english_base.end(), isupper) != b.english_base.end();
-                //             if (a_has_upper == b_has_upper) {
-                //                 return a.english_base.size() < b.english_base.size();
-                //             } else {
-                //                 return b_has_upper;
-                //             }
-                //         });
-                //         input_words.push_back(std::move(word));
-                //     } else if (pw::string::ends_with(*string_word_it, "que")) {
-                //     }
-                // }
-
                 std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
                 {
                     std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> current_clause;
