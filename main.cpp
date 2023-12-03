@@ -127,34 +127,76 @@ int main(int argc, char* argv[]) {
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
                 std::vector<std::vector<WordVariant>> input_words;
 
-                for (auto it = split_input_sentence.begin(); it != split_input_sentence.end(); ++it) {
-                    if (!pw::string::iequals(*it, "atque") &&
-                        !pw::string::iequals(*it, "quoque") &&
-                        !pw::string::iequals(*it, "usque") &&
-                        pw::string::ends_with(*it, "que")) {
-                        it->erase(it->size() - 3);
-                        it = std::next(split_input_sentence.insert(it, "que"));
+                for (auto string_word_it = split_input_sentence.begin(); string_word_it != split_input_sentence.end();) {
+                    std::string beginning_punctuation;
+                    std::string ending_punctuation;
+                    for (size_t i = 0; i < string_word_it->size() && ispunct((*string_word_it)[i]); ++i) {
+                        beginning_punctuation.push_back((*string_word_it)[i]);
                     }
-                }
-
-                for (auto string_word : split_input_sentence) {
-                    // Remove punctuation for dictionary lookup
-                    string_word.erase(std::remove_if(string_word.begin(), string_word.end(), ispunct), string_word.end());
+                    for (size_t i = string_word_it->size(); i-- > 0 && ispunct((*string_word_it)[i]);) {
+                        ending_punctuation.insert(ending_punctuation.begin(), (*string_word_it)[i]);
+                    }
+                    std::string stripped_word = string_word_it->substr(beginning_punctuation.size(), string_word_it->size() - beginning_punctuation.size() - ending_punctuation.size());
 
                     std::vector<WordVariant> word;
-                    if (query_dictionary(string_word, word)) {
-                        std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
-                            bool a_has_upper = std::find_if(a.english_base.begin(), a.english_base.end(), isupper) != a.english_base.end();
-                            bool b_has_upper = std::find_if(b.english_base.begin(), b.english_base.end(), isupper) != b.english_base.end();
-                            if (a_has_upper == b_has_upper) {
-                                return a.english_base.size() < b.english_base.size();
-                            } else {
-                                return b_has_upper;
-                            }
-                        });
-                        input_words.push_back(std::move(word));
+                    if (!query_dictionary(stripped_word, word)) {
+                        if (pw::string::ends_with(stripped_word, "que")) {
+                            string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 3, 3);
+                            string_word_it = std::next(split_input_sentence.insert(string_word_it, "et"));
+                            input_words.push_back({
+                                {
+                                    .forms = {std::make_shared<Conjunction>()},
+                                    .english_base = "and",
+                                },
+                            });
+                            continue;
+                        } else if (pw::string::ends_with(stripped_word, "cum")) {
+                            string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 3, 3);
+                            string_word_it = std::next(split_input_sentence.insert(string_word_it, "cum"));
+                            input_words.push_back({
+                                {
+                                    .forms = {std::make_shared<Preposition>(CASUS_ABLATIVE)},
+                                    .english_base = "with",
+                                },
+                            });
+                            continue;
+                        } else if (pw::string::ends_with(stripped_word, "ne")) {
+                            string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 2, 2);
+                            continue;
+                        } else {
+                            return pw::HTTPResponse::make_basic(400);
+                        }
                     }
+
+                    std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
+                        bool a_has_upper = std::find_if(a.english_base.begin(), a.english_base.end(), isupper) != a.english_base.end();
+                        bool b_has_upper = std::find_if(b.english_base.begin(), b.english_base.end(), isupper) != b.english_base.end();
+                        if (a_has_upper == b_has_upper) {
+                            return a.english_base.size() < b.english_base.size();
+                        } else {
+                            return b_has_upper;
+                        }
+                    });
+                    input_words.push_back(std::move(word));
+                    ++string_word_it;
                 }
+
+                // for (auto string_word : split_input_sentence) {
+                //     std::vector<WordVariant> word;
+                //     if (query_dictionary(string_word, word)) {
+                //         std::sort(word.begin(), word.end(), [](const auto& a, const auto& b) {
+                //             bool a_has_upper = std::find_if(a.english_base.begin(), a.english_base.end(), isupper) != a.english_base.end();
+                //             bool b_has_upper = std::find_if(b.english_base.begin(), b.english_base.end(), isupper) != b.english_base.end();
+                //             if (a_has_upper == b_has_upper) {
+                //                 return a.english_base.size() < b.english_base.size();
+                //             } else {
+                //                 return b_has_upper;
+                //             }
+                //         });
+                //         input_words.push_back(std::move(word));
+                //     } else if (pw::string::ends_with(*string_word_it, "que")) {
+                //     }
+                // }
 
                 std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
                 {

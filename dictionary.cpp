@@ -63,6 +63,16 @@ const std::unordered_multimap<std::string, const WordVariant, CaseInsensitiveHas
         },
     },
     {
+        "unumquodque",
+        {
+            .forms = {
+                std::make_shared<Pronoun>(0, CASUS_NOMINATIVE, false, GENDER_NEUTER),
+                std::make_shared<Pronoun>(0, CASUS_ACCUSATIVE, false, GENDER_NEUTER),
+            },
+            .english_base = "each one",
+        },
+    },
+    {
         "rapide",
         {
             .forms = {
@@ -103,8 +113,9 @@ std::string WhitakersWords::remove_accents(const std::string& str) {
 size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) {
     thread_local WhitakersWords words;
 
-    // Remove accents and Js
+    // Remove accents, punctuation, and Js
     std::string ascii_word = words.remove_accents(word);
+    ascii_word.erase(std::remove_if(ascii_word.begin(), ascii_word.end(), ispunct), ascii_word.end());
     for (char& c : ascii_word) {
         if (c == 'j') {
             c = 'i';
