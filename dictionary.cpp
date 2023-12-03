@@ -153,7 +153,7 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         } else if (pw::string::ends_with(line, "MORE - hit RETURN/ENTER to continue")) {
             words.in << std::endl;
             continue;
-        } else if (line.front() == ' ' || line.front() == '-') {
+        } else if ((line.front() == ' ' && (line.size() < 2 || !isdigit(line[1]))) || line.front() == '-') {
             continue;
         }
         last_line_empty = line.empty() || line.front() == '*';
@@ -178,7 +178,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
                     if (first_english_base.empty() && !variant.english_base.empty()) {
                         first_english_base = variant.english_base;
                     }
-                } while (ss && std::find_if(variant.english_base.begin(), variant.english_base.end(), isspace) != variant.english_base.end());
+                } while (ss && (variant.english_base == "etc" ||
+                                   std::find_if(variant.english_base.begin(), variant.english_base.end(), isspace) != variant.english_base.end()));
 
                 if (!variant.english_base.empty()) {
                     ret.push_back(std::move(variant));
@@ -500,6 +501,56 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
 
         case hash("INTERJ"): {
             variant.forms.push_back(std::make_shared<Interjection>());
+            break;
+        }
+
+        case hash("NUM"): {
+            Declension declension;
+            std::string string_case;
+            char char_plurality;
+            char char_gender;
+            std::string string_type;
+            ss >> declension >> unknown >> string_case >> char_plurality >> char_gender >> string_type;
+
+            // Parse case
+            Casus casus;
+            switch (hash(string_case)) {
+            case hash("NOM"):
+            case hash("X"): casus = CASUS_NOMINATIVE; break;
+            case hash("GEN"): casus = CASUS_GENITIVE; break;
+            case hash("DAT"): casus = CASUS_DATIVE; break;
+            case hash("ACC"): casus = CASUS_ACCUSATIVE; break;
+            case hash("ABL"): casus = CASUS_ABLATIVE; break;
+            case hash("VOC"): casus = CASUS_VOCATIVE; break;
+            case hash("LOC"): casus = CASUS_LOCATIVE; break;
+            default: throw std::runtime_error("Invalid case");
+            }
+
+            // Parse plurality
+            bool plural = char_plurality == 'P';
+
+            // Parse gender
+            Gender gender;
+            switch (char_gender) {
+            case 'M': gender = GENDER_MASCULINE; break;
+            case 'F': gender = GENDER_FEMININE; break;
+            case 'N': gender = GENDER_NEUTER; break;
+            case 'C':
+            case 'X': gender = GENDER_COMMON; break;
+            default: throw std::runtime_error("Invalid gender");
+            }
+
+            // Parse type
+            NumeralType type;
+            switch (hash(string_type)) {
+            case hash("CARD"): type = NUMERAL_TYPE_CARDINAL; break;
+            case hash("ORD"): type = NUMERAL_TYPE_ORDINAL; break;
+            case hash("DIST"): type = NUMERAL_TYPE_DISTRIBUTIVE; break;
+            case hash("ADVERB"): type = NUMERAL_TYPE_ADVERB; break;
+            default: throw std::runtime_error("Invalid numeral type");
+            }
+
+            variant.forms.push_back(std::make_shared<Numeral>(declension, casus, plural, gender, type));
             break;
         }
         }
