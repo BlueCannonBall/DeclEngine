@@ -18,6 +18,7 @@ json WordForm::to_json() const {
     case PART_OF_SPEECH_CONJUNCTION: ret["part_of_speech"] = "conjunction"; break;
     case PART_OF_SPEECH_PREPOSITION: ret["part_of_speech"] = "preposition"; break;
     case PART_OF_SPEECH_INTERJECTION: ret["part_of_speech"] = "interjection"; break;
+    case PART_OF_SPEECH_NUMERAL: ret["part_of_speech"] = "numeral"; break;
     }
 
     return ret;
@@ -190,6 +191,20 @@ json Preposition::to_json() const {
     case CASUS_VOCATIVE: ret["casus"] = "vocative"; break;
     case CASUS_LOCATIVE: ret["casus"] = "locative"; break;
     default: throw std::logic_error("Invalid case");
+    }
+
+    return ret;
+}
+
+json Numeral::to_json() const {
+    json ret = Noun::to_json();
+
+    switch (type) {
+    case NUMERAL_TYPE_CARDINAL: ret["degree"] = "cardinal"; break;
+    case NUMERAL_TYPE_ORDINAL: ret["degree"] = "ordinal"; break;
+    case NUMERAL_TYPE_DISTRIBUTIVE: ret["degree"] = "distributive"; break;
+    case NUMERAL_TYPE_ADVERB: ret["degree"] = "adverb"; break;
+    default: throw std::logic_error("Invalid degree");
     }
 
     return ret;

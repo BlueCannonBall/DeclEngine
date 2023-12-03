@@ -14,6 +14,7 @@ enum PartOfSpeech {
     PART_OF_SPEECH_CONJUNCTION,
     PART_OF_SPEECH_PREPOSITION,
     PART_OF_SPEECH_INTERJECTION,
+    PART_OF_SPEECH_NUMERAL,
 };
 
 enum Casus {
@@ -74,6 +75,14 @@ enum Mood {
     MOOD_NONE,
 };
 
+enum NumeralType {
+    NUMERAL_TYPE_CARDINAL,
+    NUMERAL_TYPE_ORDINAL,
+    NUMERAL_TYPE_DISTRIBUTIVE,
+    NUMERAL_TYPE_ADVERB,
+    NUMERAL_TYPE_NONE,
+};
+
 typedef unsigned short Declension;
 typedef unsigned short Conjugation;
 typedef unsigned short Person;
@@ -95,6 +104,7 @@ public:
     virtual inline Tense get_tense() const { return TENSE_NONE; }
     virtual inline Voice get_voice() const { return VOICE_NONE; }
     virtual inline Mood get_mood() const { return MOOD_NONE; }
+    virtual inline NumeralType get_numeral_type() const { return NUMERAL_TYPE_NONE; }
     virtual inline Declension get_declension() const { return 0; }
     virtual inline Conjugation get_conjugation() const { return 0; }
     virtual inline Person get_person() const { return 0; }
@@ -304,4 +314,24 @@ public:
     inline std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
     }
+};
+
+class Numeral : public Noun {
+public:
+    NumeralType type;
+
+    Numeral(PartOfSpeech part_of_speech = PART_OF_SPEECH_NUMERAL):
+        Noun(part_of_speech) {}
+    Numeral(Declension declension, Casus casus, bool plural, Gender gender, NumeralType type):
+        Noun(declension, casus, plural, gender),
+        type(type) {
+        part_of_speech = PART_OF_SPEECH_NUMERAL;
+    }
+
+    std::string english_equivalent(const std::string& english_base) const override;
+    nlohmann::json to_json() const override;
+
+    inline NumeralType get_numeral_type() const override { return type; }
+
+    inline bool is_noun_like() const override { return false; }
 };

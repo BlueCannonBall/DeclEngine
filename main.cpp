@@ -128,7 +128,8 @@ int main(int argc, char* argv[]) {
                 std::vector<std::vector<WordVariant>> input_words;
 
                 for (auto it = split_input_sentence.begin(); it != split_input_sentence.end(); ++it) {
-                    if (!pw::string::iequals(*it, "quoque") &&
+                    if (!pw::string::iequals(*it, "atque") &&
+                        !pw::string::iequals(*it, "quoque") &&
                         !pw::string::iequals(*it, "usque") &&
                         pw::string::ends_with(*it, "que")) {
                         it->erase(it->size() - 3);
