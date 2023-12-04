@@ -198,8 +198,24 @@ int main(int argc, char* argv[]) {
                     ++string_word_it;
                 }
 
-                std::vector<std::pair<std::string, std::shared_ptr<WordForm>>>
-                    output_forms;
+                std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
+                // {
+                //     // PHASE 1: RESOLVE GIVENS
+                //     output_forms.reserve(input_words.size());
+                //     for (const auto& word : input_words) {
+                //         if (word.size() == 1 && word.front().forms.size() == 1) {
+                //             output_forms.push_back({word.front().english_base, word.front().forms.front()});
+                //         } else {
+                //             output_forms.push_back({{}, nullptr});
+                //         }
+                //     }
+
+                //     // PHASE 2: RESOLVE USING SURROUNDINGS
+                //     for (size_t i = 0; i < input_words.size();) {
+
+                //     }
+                // }
+
                 {
                     std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> current_clause;
                     size_t subjects = 0;
@@ -303,6 +319,15 @@ int main(int argc, char* argv[]) {
                                         break;
 
                                     case PART_OF_SPEECH_ADJECTIVE:
+                                        // Check for conjunction
+                                        for (const auto& form : variant.forms) {
+                                            if (form->part_of_speech == PART_OF_SPEECH_CONJUNCTION) {
+                                                current_clause.push_back({variant.english_base, form});
+                                                goto next_word;
+                                            }
+                                        }
+
+                                        // Check for another adjective
                                         for (const auto& form : variant.forms) {
                                             Adjective* adjective;
                                             if ((adjective = dynamic_cast<Adjective*>(form.get())) && adjective->plural == prev_form->is_plural()) {
@@ -310,12 +335,21 @@ int main(int argc, char* argv[]) {
                                                 goto next_word;
                                             }
                                         }
+
                                         break;
 
                                     case PART_OF_SPEECH_ADVERB:
                                         // Check for conjunction
                                         for (const auto& form : variant.forms) {
                                             if (form->part_of_speech == PART_OF_SPEECH_CONJUNCTION) {
+                                                current_clause.push_back({variant.english_base, form});
+                                                goto next_word;
+                                            }
+                                        }
+
+                                        // Check for another adverb
+                                        for (const auto& form : variant.forms) {
+                                            if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
                                                 current_clause.push_back({variant.english_base, form});
                                                 goto next_word;
                                             }
