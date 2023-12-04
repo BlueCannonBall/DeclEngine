@@ -563,9 +563,9 @@ std::string Adjective::english_equivalent(const std::string& english_base) const
 
 std::string Adverb::english_equivalent(const std::string& english_base) const {
     if (degree) {
-        std::string ret;
+        std::string ret = english_base;
         if (pw::string::ends_with(english_base, "ly")) {
-            ret = english_base.substr(0, english_base.size() - 2);
+            ret.erase(ret.size() - 2);
         }
 
         switch (degree) {
@@ -703,7 +703,7 @@ std::string Pronoun::english_equivalent(const std::string& english_base) const {
 std::string Numeral::english_equivalent(const std::string& english_base) const {
     std::string ret = english_base;
     if (type == NUMERAL_TYPE_ORDINAL) {
-        switch (ret[english_base.size() - 3]) { // The english base should be at least 3 characters
+        switch (ret[ret.size() - 3]) { // The english base should be at least 3 characters
         case '1':
             memcpy(&ret[ret.size() - 2], "st", 2);
             break;
@@ -717,5 +717,5 @@ std::string Numeral::english_equivalent(const std::string& english_base) const {
             break;
         }
     }
-    return english_base;
+    return ret;
 }

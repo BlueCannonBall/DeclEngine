@@ -567,20 +567,5 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         }
     }
 
-    if (ret.empty() && isupper(ascii_word.front())) {
-        ret.push_back({
-            .forms = {
-                std::make_shared<Noun>(0, CASUS_NOMINATIVE, false, GENDER_COMMON),
-                std::make_shared<Noun>(0, CASUS_GENITIVE, false, GENDER_COMMON),
-                std::make_shared<Noun>(0, CASUS_DATIVE, false, GENDER_COMMON),
-                std::make_shared<Noun>(0, CASUS_ACCUSATIVE, false, GENDER_COMMON),
-                std::make_shared<Noun>(0, CASUS_ABLATIVE, false, GENDER_COMMON),
-                std::make_shared<Noun>(0, CASUS_VOCATIVE, false, GENDER_COMMON),
-                std::make_shared<Noun>(0, CASUS_LOCATIVE, false, GENDER_COMMON),
-            },
-            .english_base = ascii_word,
-        });
-    }
-
     return ret.size();
 }
