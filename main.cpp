@@ -163,6 +163,23 @@ int main(int argc, char* argv[]) {
                         } else if (pw::string::ends_with(stripped_word, "ne")) {
                             string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 2, 2);
                             continue;
+                        } else if (isupper(stripped_word.front())) {
+                            input_words.push_back({
+                                {
+                                    .forms = {
+                                        std::make_shared<Noun>(0, CASUS_NOMINATIVE, false, GENDER_COMMON),
+                                        std::make_shared<Noun>(0, CASUS_GENITIVE, false, GENDER_COMMON),
+                                        std::make_shared<Noun>(0, CASUS_DATIVE, false, GENDER_COMMON),
+                                        std::make_shared<Noun>(0, CASUS_ACCUSATIVE, false, GENDER_COMMON),
+                                        std::make_shared<Noun>(0, CASUS_ABLATIVE, false, GENDER_COMMON),
+                                        std::make_shared<Noun>(0, CASUS_VOCATIVE, false, GENDER_COMMON),
+                                        std::make_shared<Noun>(0, CASUS_LOCATIVE, false, GENDER_COMMON),
+                                    },
+                                    .english_base = stripped_word,
+                                },
+                            });
+                            ++string_word_it;
+                            continue;
                         } else {
                             return pw::HTTPResponse::make_basic(400);
                         }
@@ -181,7 +198,8 @@ int main(int argc, char* argv[]) {
                     ++string_word_it;
                 }
 
-                std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
+                std::vector<std::pair<std::string, std::shared_ptr<WordForm>>>
+                    output_forms;
                 {
                     std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> current_clause;
                     size_t subjects = 0;
