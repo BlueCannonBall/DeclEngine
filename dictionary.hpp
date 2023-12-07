@@ -21,12 +21,23 @@ struct WordVariant {
     std::vector<std::shared_ptr<WordForm>> forms;
     std::string english_base;
 
-    bool is_valid() const {
-        return !forms.empty();
+    static WordVariant make_proper_noun(const std::string& english_base) {
+        return {
+            .forms = {
+                std::make_shared<Noun>(0, CASUS_NOMINATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_GENITIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_DATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_ACCUSATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_ABLATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_VOCATIVE, false, GENDER_COMMON),
+                std::make_shared<Noun>(0, CASUS_LOCATIVE, false, GENDER_COMMON),
+            },
+            .english_base = english_base,
+        };
     }
 
-    PartOfSpeech part_of_speech() const {
-        return forms.front()->part_of_speech;
+    bool is_valid() const {
+        return !forms.empty();
     }
 };
 

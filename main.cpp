@@ -141,7 +141,6 @@ int main(int argc, char* argv[]) {
                     std::vector<WordVariant> word;
                     if (!query_dictionary(stripped_word, word)) {
                         if (pw::string::ends_with(stripped_word, "que")) {
-                            string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 3, 3);
                             string_word_it = std::next(split_input_sentence.insert(string_word_it, "et"));
                             input_words.push_back({
                                 {
@@ -149,9 +148,17 @@ int main(int argc, char* argv[]) {
                                     .english_base = "and",
                                 },
                             });
-                            continue;
+                            stripped_word.erase(stripped_word.size() - 3);
+                            if (!query_dictionary(stripped_word, word)) {
+                                if (isupper(stripped_word.front())) {
+                                    input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
+                                    ++string_word_it;
+                                    continue;
+                                } else {
+                                    return pw::HTTPResponse(400);
+                                }
+                            }
                         } else if (pw::string::ends_with(stripped_word, "cum")) {
-                            string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 3, 3);
                             string_word_it = std::next(split_input_sentence.insert(string_word_it, "cum"));
                             input_words.push_back({
                                 {
@@ -159,25 +166,41 @@ int main(int argc, char* argv[]) {
                                     .english_base = "with",
                                 },
                             });
-                            continue;
+                            stripped_word.erase(stripped_word.size() - 3);
+                            if (!query_dictionary(stripped_word, word)) {
+                                if (isupper(stripped_word.front())) {
+                                    input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
+                                    ++string_word_it;
+                                    continue;
+                                } else {
+                                    return pw::HTTPResponse(400);
+                                }
+                            }
                         } else if (pw::string::ends_with(stripped_word, "ne")) {
-                            string_word_it->erase(string_word_it->size() - ending_punctuation.size() - 2, 2);
-                            continue;
+                            stripped_word.erase(stripped_word.size() - 2);
+                            if (!query_dictionary(stripped_word, word)) {
+                                if (isupper(stripped_word.front())) {
+                                    input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
+                                    ++string_word_it;
+                                    continue;
+                                } else {
+                                    return pw::HTTPResponse(400);
+                                }
+                            } else {
+                                for (auto variant_it = word.begin(); variant_it != word.end();) {
+                                    variant_it->forms.erase(std::remove_if(variant_it->forms.begin(), variant_it->forms.end(), [](const auto& form) {
+                                        return form->part_of_speech != PART_OF_SPEECH_VERB;
+                                    }),
+                                        variant_it->forms.end());
+                                    if (!variant_it->is_valid()) {
+                                        variant_it = word.erase(variant_it);
+                                    } else {
+                                        ++variant_it;
+                                    }
+                                }
+                            }
                         } else if (isupper(stripped_word.front())) {
-                            input_words.push_back({
-                                {
-                                    .forms = {
-                                        std::make_shared<Noun>(0, CASUS_NOMINATIVE, false, GENDER_COMMON),
-                                        std::make_shared<Noun>(0, CASUS_GENITIVE, false, GENDER_COMMON),
-                                        std::make_shared<Noun>(0, CASUS_DATIVE, false, GENDER_COMMON),
-                                        std::make_shared<Noun>(0, CASUS_ACCUSATIVE, false, GENDER_COMMON),
-                                        std::make_shared<Noun>(0, CASUS_ABLATIVE, false, GENDER_COMMON),
-                                        std::make_shared<Noun>(0, CASUS_VOCATIVE, false, GENDER_COMMON),
-                                        std::make_shared<Noun>(0, CASUS_LOCATIVE, false, GENDER_COMMON),
-                                    },
-                                    .english_base = stripped_word,
-                                },
-                            });
+                            input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
                             ++string_word_it;
                             continue;
                         } else {
@@ -199,293 +222,454 @@ int main(int argc, char* argv[]) {
                 }
 
                 std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
-                // {
-                //     // PHASE 1: RESOLVE GIVENS
-                //     output_forms.reserve(input_words.size());
-                //     for (const auto& word : input_words) {
-                //         if (word.size() == 1 && word.front().forms.size() == 1) {
-                //             output_forms.push_back({word.front().english_base, word.front().forms.front()});
-                //         } else {
-                //             output_forms.push_back({{}, nullptr});
-                //         }
-                //     }
-
-                //     // PHASE 2: RESOLVE USING SURROUNDINGS
-                //     for (size_t i = 0; i < input_words.size();) {
-
-                //     }
-                // }
-
                 {
-                    std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> current_clause;
-                    size_t subjects = 0;
-                    size_t verbs = 0;
-                    size_t objects = 0;
-                    bool subject_plural = false;
-                    for (size_t i = 0; i < input_words.size();) {
-                        auto& word = input_words[i];
+                    // PHASE 1: RESOLVE GIVENS
+                    output_forms.reserve(input_words.size());
+                    for (const auto& word : input_words) {
+                        if (word.size() == 1 && word.front().forms.size() == 1) {
+                            output_forms.push_back({word.front().english_base, word.front().forms.front()});
+                        } else {
+                            output_forms.push_back({{}, nullptr});
+                        }
+                    }
 
-                        if (!current_clause.empty()) {
-                            const WordForm* prev_form = current_clause.back().second.get();
-                            switch (prev_form->part_of_speech) {
-                            case PART_OF_SPEECH_PREPOSITION:
-                                for (const auto& variant : word) {
-                                    for (const auto& form : variant.forms) {
-                                        if (form->is_noun_like() && form->get_casus() == prev_form->get_casus()) { // Check for noun with matching case
-                                            current_clause.push_back({variant.english_base, form});
-                                            goto next_word;
-                                        }
-                                    }
-                                }
-                                if (input_words[i - 1].size() > 1 ||
-                                    input_words[i - 1].front().forms.size() > 1) {
-                                    goto prev_word;
-                                }
+                    // PHASE 2: RESOLVE UNKNOWNS
+                    bool resolved;
+                    do {
+                        resolved = false;
 
-                            case PART_OF_SPEECH_CONJUNCTION:
-                                if (current_clause.size() >= 2) {
-                                    for (const auto& variant : word) {
-                                        const WordForm* prev_prev_form = current_clause[i - output_forms.size() - 2].second.get();
-                                        for (const auto& form : variant.forms) {
-                                            if (form->part_of_speech == prev_prev_form->part_of_speech &&
-                                                form->get_casus() == prev_prev_form->get_casus()) {
-                                                current_clause.push_back({variant.english_base, form});
-                                                if (form->get_casus() == CASUS_NOMINATIVE) {
-                                                    subject_plural = true;
+                        // PHASE 2.1: RESOLVE UNKNOWNS USING KNOWN SURROUNDINGS
+                        for (size_t i = 0; i < output_forms.size();) {
+                            auto& current_form = output_forms[i];
+
+                            if (!current_form.second) {
+                                const auto& current_word = input_words[i];
+
+                                if (i != 0 && output_forms[i - 1].second && !ispunct(split_input_sentence[i - 1].back())) {
+                                    const auto& prev_form = output_forms[i - 1];
+                                    switch (prev_form.second->part_of_speech) {
+                                    case PART_OF_SPEECH_CONJUNCTION:
+                                        if (i != 1 &&
+                                            output_forms[i - 2].second &&
+                                            !ispunct(split_input_sentence[i - 2].back()) &&
+                                            (prev_form.first == "and" || prev_form.first == "or")) {
+                                            const auto& prev_prev_form = output_forms[i - 2];
+                                            switch (prev_prev_form.second->part_of_speech) {
+                                            case PART_OF_SPEECH_NOUN:
+                                            case PART_OF_SPEECH_PRONOUN:
+                                            case PART_OF_SPEECH_PARTICIPLE:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->is_noun_like() &&
+                                                            form->get_casus() == prev_prev_form.second->get_casus() &&
+                                                            form->is_plural() == prev_prev_form.second->is_plural()) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
                                                 }
-                                                goto next_word;
+                                                break;
+
+                                            case PART_OF_SPEECH_VERB:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->part_of_speech == PART_OF_SPEECH_VERB &&
+                                                            form->is_plural() == prev_prev_form.second->is_plural()) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_ADJECTIVE:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
+                                                            form->get_casus() == prev_prev_form.second->get_casus() &&
+                                                            form->is_plural() == prev_prev_form.second->is_plural() &&
+                                                            form->get_gender() == prev_prev_form.second->get_gender()) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_ADVERB:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            default:
+                                                break;
                                             }
                                         }
-                                    }
-                                    goto next_clause;
-                                }
-                                break;
+                                        break;
 
-                            default:
-                                for (const auto& variant : word) {
-                                    switch (prev_form->part_of_speech) {
+                                    case PART_OF_SPEECH_PREPOSITION:
+                                        for (const auto& variant : current_word) {
+                                            for (const auto& form : variant.forms) {
+                                                if (form->is_noun_like() && form->get_casus() == prev_form.second->get_casus()) {
+                                                    current_form = {variant.english_base, form};
+                                                    goto next_form;
+                                                }
+                                            }
+                                        }
+                                        break;
+
                                     case PART_OF_SPEECH_NOUN:
                                     case PART_OF_SPEECH_PRONOUN:
                                     case PART_OF_SPEECH_PARTICIPLE:
-                                        if ((subjects && objects) ||
-                                            std::find_if(variant.forms.begin(), variant.forms.end(), [](const auto& form) {
-                                                return form->is_noun_like() && (form->get_casus() == CASUS_NOMINATIVE || form->get_casus() == CASUS_ACCUSATIVE);
-                                            }) == variant.forms.end()) {
-                                            // Check for genetive noun
+                                        for (const auto& variant : current_word) {
                                             for (const auto& form : variant.forms) {
-                                                if (form->is_noun_like() && form->get_casus() == CASUS_GENITIVE) {
-                                                    current_clause.push_back({variant.english_base, form});
-                                                    goto next_word;
-                                                }
-                                            }
-
-                                            // Check for ablative noun
-                                            for (const auto& form : variant.forms) {
-                                                if (form->is_noun_like() && form->get_casus() == CASUS_ABLATIVE) {
-                                                    current_clause.push_back({variant.english_base, form});
-                                                    goto next_word;
-                                                }
-                                            }
-
-                                            // Check for dative noun
-                                            for (const auto& form : variant.forms) {
-                                                if (form->is_noun_like() && form->get_casus() == CASUS_DATIVE) {
-                                                    current_clause.push_back({variant.english_base, form});
-                                                    goto next_word;
-                                                }
-                                            }
-
-                                            // Check for locative noun
-                                            for (const auto& form : variant.forms) {
-                                                if (form->is_noun_like() && form->get_casus() == CASUS_LOCATIVE) {
-                                                    current_clause.push_back({variant.english_base, form});
-                                                    goto next_word;
+                                                if (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
+                                                    form->get_casus() == prev_form.second->get_casus() &&
+                                                    form->is_plural() == prev_form.second->is_plural() &&
+                                                    form->get_gender() == prev_form.second->get_gender()) {
+                                                    current_form = {variant.english_base, form};
+                                                    goto next_form;
                                                 }
                                             }
                                         }
-
-                                        // Check for adjective
-                                        for (const auto& form : variant.forms) {
-                                            Adjective* adjective;
-                                            if ((adjective = dynamic_cast<Adjective*>(form.get())) &&
-                                                adjective->casus == prev_form->get_casus() &&
-                                                adjective->plural == prev_form->is_plural() &&
-                                                adjective->gender == prev_form->get_gender()) {
-                                                current_clause.push_back({variant.english_base, form});
-                                                goto next_word;
-                                            }
-                                        }
-
                                         break;
 
-                                    case PART_OF_SPEECH_ADJECTIVE:
-                                        // Check for conjunction
-                                        for (const auto& form : variant.forms) {
-                                            if (form->part_of_speech == PART_OF_SPEECH_CONJUNCTION) {
-                                                current_clause.push_back({variant.english_base, form});
-                                                goto next_word;
+                                    case PART_OF_SPEECH_VERB:
+                                        for (const auto& variant : current_word) {
+                                            for (const auto& form : variant.forms) {
+                                                if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
+                                                    current_form = {variant.english_base, form};
+                                                    goto next_form;
+                                                }
                                             }
                                         }
-
-                                        // Check for another adjective
-                                        for (const auto& form : variant.forms) {
-                                            Adjective* adjective;
-                                            if ((adjective = dynamic_cast<Adjective*>(form.get())) && adjective->plural == prev_form->is_plural()) {
-                                                current_clause.push_back({variant.english_base, form});
-                                                goto next_word;
-                                            }
-                                        }
-
-                                        break;
-
-                                    case PART_OF_SPEECH_ADVERB:
-                                        // Check for conjunction
-                                        for (const auto& form : variant.forms) {
-                                            if (form->part_of_speech == PART_OF_SPEECH_CONJUNCTION) {
-                                                current_clause.push_back({variant.english_base, form});
-                                                goto next_word;
-                                            }
-                                        }
-
-                                        // Check for another adverb
-                                        for (const auto& form : variant.forms) {
-                                            if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
-                                                current_clause.push_back({variant.english_base, form});
-                                                goto next_word;
-                                            }
-                                        }
-
-                                        // Check for verb
-                                        for (const auto& form : variant.forms) {
-                                            if (form->part_of_speech == PART_OF_SPEECH_VERB && (!subjects || subjects < verbs || form->is_plural() == subject_plural)) { // Check for verb with matching number
-                                                current_clause.push_back({variant.english_base, form});
-                                                ++verbs;
-                                                goto next_word;
-                                            }
-                                        }
-
                                         break;
 
                                     default:
                                         break;
                                     }
                                 }
-                                break;
-                            }
-                        }
 
-                        // Check for preposition
-                        for (const auto& variant : word) {
-                            for (const auto& form : variant.forms) {
-                                if (form->part_of_speech == PART_OF_SPEECH_PREPOSITION) {
-                                    current_clause.push_back({variant.english_base, form});
-                                    goto next_word;
+                                if (i != output_forms.size() - 1 &&
+                                    output_forms[i + 1].second &&
+                                    !ispunct(split_input_sentence[i].back()) &&
+                                    !ispunct(split_input_sentence[i + 1].back())) {
+                                    const auto& next_form = output_forms[i + 1];
+                                    switch (next_form.second->part_of_speech) {
+                                    case PART_OF_SPEECH_CONJUNCTION:
+                                        if ((next_form.first == "and" || next_form.first == "or") && i != output_forms.size() - 2 && output_forms[i + 2].second) {
+                                            const auto& next_next_form = output_forms[i + 2];
+                                            switch (next_next_form.second->part_of_speech) {
+                                            case PART_OF_SPEECH_NOUN:
+                                            case PART_OF_SPEECH_PRONOUN:
+                                            case PART_OF_SPEECH_PARTICIPLE:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->is_noun_like() &&
+                                                            form->get_casus() == next_next_form.second->get_casus() &&
+                                                            form->is_plural() == next_next_form.second->is_plural()) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_VERB:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->part_of_speech == PART_OF_SPEECH_VERB &&
+                                                            form->is_plural() == next_next_form.second->is_plural()) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_ADJECTIVE:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
+                                                            form->get_casus() == next_next_form.second->get_casus() &&
+                                                            form->is_plural() == next_next_form.second->is_plural() &&
+                                                            form->get_gender() == next_next_form.second->get_gender()) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_ADVERB:
+                                                for (const auto& variant : current_word) {
+                                                    for (const auto& form : variant.forms) {
+                                                        if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
+                                                            current_form = {variant.english_base, form};
+                                                            goto next_form;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            default:
+                                                break;
+                                            }
+                                        }
+                                        break;
+
+                                    case PART_OF_SPEECH_NOUN:
+                                    case PART_OF_SPEECH_PRONOUN:
+                                    case PART_OF_SPEECH_PARTICIPLE:
+                                        for (const auto& variant : current_word) {
+                                            for (const auto& form : variant.forms) {
+                                                if (form->part_of_speech == PART_OF_SPEECH_PREPOSITION &&
+                                                    form->get_casus() == next_form.second->get_casus()) {
+                                                    current_form = {variant.english_base, form};
+                                                    goto next_form;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case PART_OF_SPEECH_ADJECTIVE:
+                                        for (const auto& variant : current_word) {
+                                            for (const auto& form : variant.forms) {
+                                                if (form->is_noun_like() &&
+                                                    form->get_casus() == next_form.second->get_casus() &&
+                                                    form->is_plural() == next_form.second->is_plural() &&
+                                                    form->get_gender() == next_form.second->get_gender()) {
+                                                    current_form = {variant.english_base, form};
+                                                    goto next_form;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case PART_OF_SPEECH_ADVERB:
+                                        for (const auto& variant : current_word) {
+                                            for (const auto& form : variant.forms) {
+                                                if (form->part_of_speech == PART_OF_SPEECH_VERB) {
+                                                    current_form = {variant.english_base, form};
+                                                    goto next_form;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    default:
+                                        break;
+                                    }
                                 }
                             }
+
+                            ++i;
+                            continue;
+
+                        next_form:
+                            resolved = true;
+                            ++i;
                         }
 
-                        // Check for adverb
-                        for (const auto& variant : word) {
-                            for (const auto& form : variant.forms) {
-                                if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
-                                    current_clause.push_back({variant.english_base, form});
-                                    goto next_word;
+                        // PHASE 2.2: RESOLVE SETS OF UNKNOWNS USING COMMONALITIES
+                        for (size_t i = 0; i < output_forms.size() - 1; ++i) {
+                            auto& current_form = output_forms[i];
+                            auto& next_form = output_forms[i + 1];
+                            if (current_form.second) {
+                                if (i &&
+                                    current_form.second->part_of_speech == PART_OF_SPEECH_CONJUNCTION &&
+                                    (current_form.first == "and" || current_form.first == "or") &&
+                                    !output_forms[i - 1].second &&
+                                    !next_form.second &&
+                                    !ispunct(split_input_sentence[i - 1].back()) &&
+                                    !ispunct(split_input_sentence[i].back())) {
+                                    auto& prev_form = output_forms[i - 1];
+                                    const auto& prev_word = input_words[i - 1];
+                                    for (const auto& variant_a : prev_word) {
+                                        for (const auto& form_a : variant_a.forms) {
+                                            const auto& next_word = input_words[i + 1];
+                                            switch (form_a->part_of_speech) {
+                                            case PART_OF_SPEECH_NOUN:
+                                            case PART_OF_SPEECH_PRONOUN:
+                                            case PART_OF_SPEECH_PARTICIPLE:
+                                                for (const auto& variant_b : next_word) {
+                                                    for (const auto& form_b : variant_b.forms) {
+                                                        if (form_b->is_noun_like() &&
+                                                            form_a->get_casus() == form_b->get_casus() &&
+                                                            form_a->is_plural() == form_b->is_plural()) {
+                                                            prev_form = {variant_a.english_base, form_a};
+                                                            next_form = {variant_b.english_base, form_b};
+                                                            goto next_cycle;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_VERB:
+                                                for (const auto& variant_b : next_word) {
+                                                    for (const auto& form_b : variant_b.forms) {
+                                                        if (form_b->part_of_speech == PART_OF_SPEECH_VERB &&
+                                                            form_a->is_plural() == form_b->is_plural()) {
+                                                            prev_form = {variant_a.english_base, form_a};
+                                                            next_form = {variant_b.english_base, form_b};
+                                                            goto next_cycle;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_ADJECTIVE:
+                                                for (const auto& variant_b : next_word) {
+                                                    for (const auto& form_b : variant_b.forms) {
+                                                        if (form_b->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
+                                                            form_a->get_casus() == form_b->get_casus() &&
+                                                            form_a->is_plural() == form_b->is_plural() &&
+                                                            form_a->get_gender() == form_b->get_gender()) {
+                                                            prev_form = {variant_a.english_base, form_a};
+                                                            next_form = {variant_b.english_base, form_b};
+                                                            goto next_cycle;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case PART_OF_SPEECH_ADVERB:
+                                                for (const auto& variant_b : next_word) {
+                                                    for (const auto& form_b : variant_b.forms) {
+                                                        if (form_b->part_of_speech == PART_OF_SPEECH_ADVERB) {
+                                                            prev_form = {variant_a.english_base, form_a};
+                                                            next_form = {variant_b.english_base, form_b};
+                                                            goto next_cycle;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            default:
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                        }
-
-                        // Check for subject
-                        if (subjects <= objects) {
-                            for (const auto& variant : word) {
-                                for (const auto& form : variant.forms) {
-                                    if (form->is_noun_like() && form->get_casus() == CASUS_NOMINATIVE) {
-                                        current_clause.push_back({variant.english_base, form});
-                                        ++subjects;
-                                        subject_plural = form->is_plural();
-                                        goto next_word;
+                            } else if (!next_form.second) {
+                                const auto& current_word = input_words[i];
+                                for (const auto& variant_a : current_word) {
+                                    for (const auto& form_a : variant_a.forms) {
+                                        if (form_a->part_of_speech == PART_OF_SPEECH_PREPOSITION) {
+                                            const auto& next_word = input_words[i + 1];
+                                            for (const auto& variant_b : next_word) {
+                                                for (const auto& form_b : variant_b.forms) {
+                                                    if (form_b->is_noun_like() && form_a->get_casus() == form_b->get_casus()) {
+                                                        current_form = {variant_a.english_base, form_a};
+                                                        next_form = {variant_b.english_base, form_b};
+                                                        goto next_cycle;
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        // Check for object
-                        for (const auto& variant : word) {
-                            for (const auto& form : variant.forms) {
-                                if ((form->is_noun_like() || form->part_of_speech == PART_OF_SPEECH_ADJECTIVE) &&
-                                    (form->get_casus() == CASUS_ACCUSATIVE ||
-                                        (form->part_of_speech == PART_OF_SPEECH_ADJECTIVE && form->get_casus() == CASUS_NOMINATIVE))) {
-                                    current_clause.push_back({variant.english_base, form});
-                                    ++objects;
-                                    goto next_word;
+                        // PHASE 2.3: NAIVELY DISCOVER GENITIVES, DATIVES, AND ABLATIVES AFTER OTHER NOUN-LIKES
+                        for (size_t i = 0; i < output_forms.size() - 1; ++i) {
+                            const auto& current_form = output_forms[i];
+                            auto& next_form = output_forms[i + 1];
+                            if (current_form.second && current_form.second->is_noun_like() && !next_form.second) {
+                                const auto& next_word = input_words[i + 1];
+
+                                // Check for genitives
+                                for (const auto& variant : next_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_GENITIVE) {
+                                            next_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
+                                }
+
+                                // Check for datives
+                                for (const auto& variant : next_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_DATIVE) {
+                                            next_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
+                                }
+
+                                // Check for ablatives
+                                for (const auto& variant : next_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_ABLATIVE) {
+                                            next_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
                                 }
                             }
                         }
 
-                        // Check for verb
-                        for (const auto& variant : word) {
-                            for (const auto& form : variant.forms) {
-                                if (form->part_of_speech == PART_OF_SPEECH_VERB && (!subjects || subjects < verbs || form->is_plural() == subject_plural)) { // Check for verb with matching number
-                                    current_clause.push_back({variant.english_base, form});
-                                    ++verbs;
-                                    goto next_word;
+                        // PHASE 2.4: NAIVELY DISCOVER SUBJECTS, OBJECTS, AND VERBS
+                        for (size_t i = 0; i < output_forms.size(); ++i) {
+                            auto& current_form = output_forms[i];
+                            if (!current_form.second) {
+                                const auto& current_word = input_words[i];
+
+                                // Check for subjects
+                                for (const auto& variant : current_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_NOMINATIVE) {
+                                            current_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
+                                }
+
+                                // Check for objects
+                                for (const auto& variant : current_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->is_noun_like() && form->get_casus() == CASUS_ACCUSATIVE) {
+                                            current_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
+                                }
+
+                                // Check for verbs
+                                for (const auto& variant : current_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->part_of_speech == PART_OF_SPEECH_VERB) {
+                                            current_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
                                 }
                             }
                         }
 
-                        current_clause.push_back({word.front().english_base, word.front().forms.front()});
-
-                    next_word:
-                        if (ispunct(split_input_sentence[i++].back())) {
-                            goto next_clause;
+                        // PHASE 2.5: PICK THE TOP FORM FOR REMAINING UNKNOWNS
+                        for (size_t i = 0; i < output_forms.size(); ++i) {
+                            auto& current_form = output_forms[i];
+                            if (!current_form.second) {
+                                current_form = {input_words[i].front().english_base, input_words[i].front().forms.front()};
+                                goto next_cycle;
+                            }
                         }
+
                         continue;
 
-                    prev_word:
-                        --i;
-                        for (auto variant_it = input_words[i].begin(); variant_it != input_words[i].end(); ++variant_it) {
-                            decltype(WordVariant::forms)::iterator form_it;
-                            if ((form_it = std::find(variant_it->forms.begin(), variant_it->forms.end(), current_clause.back().second)) != variant_it->forms.end()) {
-                                variant_it->forms.erase(form_it);
-                                if (!variant_it->is_valid()) {
-                                    input_words[i].erase(variant_it);
-                                }
-                                break;
-                            }
-                        }
-                        current_clause.pop_back();
-                        continue;
-
-                    next_clause:
-                        output_forms.reserve(output_forms.size() + current_clause.size());
-                        std::move(current_clause.begin(), current_clause.end(), std::back_inserter(output_forms));
-                        current_clause.clear();
-                        subjects = 0;
-                        verbs = 0;
-                        objects = 0;
-                        subject_plural = false;
-                    }
-                    if (!current_clause.empty()) {
-                        output_forms.reserve(output_forms.size() + current_clause.size());
-                        std::move(current_clause.begin(), current_clause.end(), std::back_inserter(output_forms));
-                    }
+                    next_cycle:
+                        resolved = true;
+                    } while (resolved);
                 }
-
-                // Reorder words
-                bool done;
-                do {
-                    done = true;
-                    for (size_t i = 1; i < output_forms.size(); ++i) {
-                        if (output_forms[i].second->part_of_speech == PART_OF_SPEECH_ADJECTIVE &&
-                            output_forms[i - 1].second->is_noun_like() &&
-                            output_forms[i].second->get_casus() == output_forms[i - 1].second->get_casus() &&
-                            output_forms[i].second->is_plural() == output_forms[i - 1].second->is_plural() &&
-                            output_forms[i].second->get_gender() == output_forms[i - 1].second->get_gender()) {
-                            std::swap(output_forms[i], output_forms[i - 1]);
-                            done = false;
-                            break;
-                        }
-                    }
-                } while (!done);
 
                 std::string output_sentence;
                 for (size_t i = 0; i < output_forms.size(); ++i) {
