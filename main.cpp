@@ -576,7 +576,23 @@ int main(int argc, char* argv[]) {
                             }
                         }
 
-                        // PHASE 2.3: NAIVELY DISCOVER GENITIVES, DATIVES, AND ABLATIVES AFTER OTHER NOUN-LIKES
+                        // PHASE 2.3: NAIVELY DISCOVER ADVERBS
+                        for (size_t i = 0; i < output_forms.size(); ++i) {
+                            auto& current_form = output_forms[i];
+                            if (!current_form.second) {
+                                const auto& current_word = input_words[i];
+                                for (const auto& variant : current_word) {
+                                    for (const auto& form : variant.forms) {
+                                        if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
+                                            current_form = {variant.english_base, form};
+                                            goto next_cycle;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // PHASE 2.4: NAIVELY DISCOVER GENITIVES, DATIVES, AND ABLATIVES AFTER OTHER NOUN-LIKES
                         for (size_t i = 0; i < output_forms.size() - 1; ++i) {
                             const auto& current_form = output_forms[i];
                             auto& next_form = output_forms[i + 1];
@@ -615,7 +631,7 @@ int main(int argc, char* argv[]) {
                             }
                         }
 
-                        // PHASE 2.4: NAIVELY DISCOVER SUBJECTS, OBJECTS, AND VERBS
+                        // PHASE 2.5: NAIVELY DISCOVER SUBJECTS, OBJECTS, AND VERBS
                         for (size_t i = 0; i < output_forms.size(); ++i) {
                             auto& current_form = output_forms[i];
                             if (!current_form.second) {
@@ -653,7 +669,7 @@ int main(int argc, char* argv[]) {
                             }
                         }
 
-                        // PHASE 2.5: PICK THE TOP FORM FOR REMAINING UNKNOWNS
+                        // PHASE 2.6: PICK THE TOP FORM FOR REMAINING UNKNOWNS
                         for (size_t i = 0; i < output_forms.size(); ++i) {
                             auto& current_form = output_forms[i];
                             if (!current_form.second) {
