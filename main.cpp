@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
                                     input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
                                     continue;
                                 } else {
-                                    return pw::HTTPResponse(400);
+                                    return pw::HTTPResponse::make_basic(400);
                                 }
                             }
                         } else if (pw::string::ends_with(stripped_word, "cum")) {
@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
                                     input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
                                     continue;
                                 } else {
-                                    return pw::HTTPResponse(400);
+                                    return pw::HTTPResponse::make_basic(400);
                                 }
                             }
                         } else if (pw::string::ends_with(stripped_word, "ne")) {
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
                                     input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
                                     continue;
                                 } else {
-                                    return pw::HTTPResponse(400);
+                                    return pw::HTTPResponse::make_basic(400);
                                 }
                             } else {
                                 for (auto variant_it = word.begin(); variant_it != word.end();) {
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
                                     }
                                 }
                                 if (word.empty()) {
-                                    return pw::HTTPResponse(400);
+                                    return pw::HTTPResponse::make_basic(400);
                                 }
                             }
                         } else if (isupper(stripped_word.front())) {
