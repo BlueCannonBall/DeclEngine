@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(input_sentence_it->second, ' ');
                 std::vector<std::vector<WordVariant>> input_words;
 
-                for (auto string_word_it = split_input_sentence.begin(); string_word_it != split_input_sentence.end();) {
+                for (auto string_word_it = split_input_sentence.begin(); string_word_it != split_input_sentence.end(); ++string_word_it) {
                     std::string beginning_punctuation;
                     std::string ending_punctuation;
                     for (size_t i = 0; i < string_word_it->size() && ispunct((*string_word_it)[i]); ++i) {
@@ -152,7 +152,6 @@ int main(int argc, char* argv[]) {
                             if (!query_dictionary(stripped_word, word)) {
                                 if (isupper(stripped_word.front())) {
                                     input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
-                                    ++string_word_it;
                                     continue;
                                 } else {
                                     return pw::HTTPResponse(400);
@@ -170,7 +169,6 @@ int main(int argc, char* argv[]) {
                             if (!query_dictionary(stripped_word, word)) {
                                 if (isupper(stripped_word.front())) {
                                     input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
-                                    ++string_word_it;
                                     continue;
                                 } else {
                                     return pw::HTTPResponse(400);
@@ -181,7 +179,6 @@ int main(int argc, char* argv[]) {
                             if (!query_dictionary(stripped_word, word)) {
                                 if (isupper(stripped_word.front())) {
                                     input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
-                                    ++string_word_it;
                                     continue;
                                 } else {
                                     return pw::HTTPResponse(400);
@@ -198,10 +195,12 @@ int main(int argc, char* argv[]) {
                                         ++variant_it;
                                     }
                                 }
+                                if (word.empty()) {
+                                    return pw::HTTPResponse(400);
+                                }
                             }
                         } else if (isupper(stripped_word.front())) {
                             input_words.push_back({WordVariant::make_proper_noun(stripped_word)});
-                            ++string_word_it;
                             continue;
                         } else {
                             return pw::HTTPResponse::make_basic(400);
@@ -218,7 +217,6 @@ int main(int argc, char* argv[]) {
                         }
                     });
                     input_words.push_back(std::move(word));
-                    ++string_word_it;
                 }
 
                 std::vector<std::pair<std::string, std::shared_ptr<WordForm>>> output_forms;
