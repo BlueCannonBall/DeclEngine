@@ -20,7 +20,7 @@ while True:
             print(
                 f"Warning: The following sentence could not be converted to IR: {latin}", file=sys.stderr)
             continue
-        ir = r.content.decode()
+        ir = r.text
         english = split_line[1]
         output_dataset.write(f"{ir}\t{english}\n")
 
