@@ -352,7 +352,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             switch (tense) {
             case TENSE_PRESENT:
                 ret += english_base;
-                if (!plural) {
+                if (person == 2 && !plural) {
                     switch (ret.back()) {
                     case 'y':
                         if (is_short(english_base)) {
