@@ -54,6 +54,33 @@ const std::unordered_multimap<std::string, const WordVariant, CaseInsensitiveHas
         },
     },
     {
+        "a",
+        {
+            .forms = {
+                std::make_shared<Preposition>(CASUS_ABLATIVE),
+            },
+            .english_base = "by",
+        },
+    },
+    {
+        "a",
+        {
+            .forms = {
+                std::make_shared<Preposition>(CASUS_ACCUSATIVE),
+            },
+            .english_base = "before",
+        },
+    },
+    {
+        "a",
+        {
+            .forms = {
+                std::make_shared<Interjection>(),
+            },
+            .english_base = "Ah",
+        },
+    },
+    {
         "pro",
         {
             .forms = {

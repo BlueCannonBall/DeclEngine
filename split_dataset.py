@@ -19,4 +19,4 @@ while True:
 
 input_dataset.close()
 left_output_dataset.close()
-left_output_dataset.close()
+right_output_dataset.close()
