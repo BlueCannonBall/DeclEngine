@@ -237,13 +237,13 @@ int main(int argc, char* argv[]) {
                         resolved = false;
 
                         // PHASE 2.1: RESOLVE UNKNOWNS USING KNOWN SURROUNDINGS
-                        for (size_t i = 0; i < output_forms.size();) {
+                        for (size_t i = 0; i < output_forms.size(); ++i) {
                             auto& current_form = output_forms[i];
 
                             if (!current_form.second) {
                                 const auto& current_word = input_words[i];
 
-                                if (i != 0 && output_forms[i - 1].second && !ispunct(split_input_sentence[i - 1].back())) {
+                                if (i && output_forms[i - 1].second && !ispunct(split_input_sentence[i - 1].back())) {
                                     const auto& prev_form = output_forms[i - 1];
                                     switch (prev_form.second->part_of_speech) {
                                     case PART_OF_SPEECH_CONJUNCTION:
@@ -338,10 +338,10 @@ int main(int argc, char* argv[]) {
                                         }
                                         break;
 
-                                    case PART_OF_SPEECH_VERB:
+                                    case PART_OF_SPEECH_ADVERB:
                                         for (const auto& variant : current_word) {
                                             for (const auto& form : variant.forms) {
-                                                if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
+                                                if (form->part_of_speech == PART_OF_SPEECH_VERB) {
                                                     current_form = {variant.english_base, form};
                                                     goto next_form;
                                                 }
@@ -450,10 +450,10 @@ int main(int argc, char* argv[]) {
                                         }
                                         break;
 
-                                    case PART_OF_SPEECH_ADVERB:
+                                    case PART_OF_SPEECH_VERB:
                                         for (const auto& variant : current_word) {
                                             for (const auto& form : variant.forms) {
-                                                if (form->part_of_speech == PART_OF_SPEECH_VERB) {
+                                                if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
                                                     current_form = {variant.english_base, form};
                                                     goto next_form;
                                                 }
@@ -467,12 +467,10 @@ int main(int argc, char* argv[]) {
                                 }
                             }
 
-                            ++i;
                             continue;
 
                         next_form:
                             resolved = true;
-                            ++i;
                         }
 
                         // PHASE 2.2: RESOLVE SETS OF UNKNOWNS USING COMMONALITIES
