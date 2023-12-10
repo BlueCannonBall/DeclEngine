@@ -14,13 +14,13 @@ while True:
     if line:
         split_line = line.strip().split('\t')
         latin = split_line[0]
-        r = requests.get(
+        req = requests.get(
             "http://localhost:8000/sentence_info", params={"sentence": latin})
-        if r.status_code != 200:
+        if req.status_code != 200:
             print(
                 f"Warning: The following sentence could not be converted to IR: {latin}", file=sys.stderr)
             continue
-        ir = r.text
+        ir = req.text
         english = split_line[1]
         output_dataset.write(f"{ir}\t{english}\n")
 
