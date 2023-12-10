@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
                                                             form->get_casus() == prev_prev_form.second->get_casus() &&
                                                             form->is_plural() == prev_prev_form.second->is_plural()) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
                                                         if (form->part_of_speech == PART_OF_SPEECH_VERB &&
                                                             form->is_plural() == prev_prev_form.second->is_plural()) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
                                                             form->is_plural() == prev_prev_form.second->is_plural() &&
                                                             form->get_gender() == prev_prev_form.second->get_gender()) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
                                                     for (const auto& form : variant.forms) {
                                                         if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -316,7 +316,7 @@ int main(int argc, char* argv[]) {
                                             for (const auto& form : variant.forms) {
                                                 if (form->is_noun_like() && form->get_casus() == prev_form.second->get_casus()) {
                                                     current_form = {variant.english_base, form};
-                                                    goto next_form;
+                                                    goto next_cycle;
                                                 }
                                             }
                                         }
@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
                                                     form->is_plural() == prev_form.second->is_plural() &&
                                                     form->get_gender() == prev_form.second->get_gender()) {
                                                     current_form = {variant.english_base, form};
-                                                    goto next_form;
+                                                    goto next_cycle;
                                                 }
                                             }
                                         }
@@ -343,7 +343,7 @@ int main(int argc, char* argv[]) {
                                             for (const auto& form : variant.forms) {
                                                 if (form->part_of_speech == PART_OF_SPEECH_VERB) {
                                                     current_form = {variant.english_base, form};
-                                                    goto next_form;
+                                                    goto next_cycle;
                                                 }
                                             }
                                         }
@@ -373,7 +373,7 @@ int main(int argc, char* argv[]) {
                                                             form->get_casus() == next_next_form.second->get_casus() &&
                                                             form->is_plural() == next_next_form.second->is_plural()) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -385,7 +385,7 @@ int main(int argc, char* argv[]) {
                                                         if (form->part_of_speech == PART_OF_SPEECH_VERB &&
                                                             form->is_plural() == next_next_form.second->is_plural()) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -399,7 +399,7 @@ int main(int argc, char* argv[]) {
                                                             form->is_plural() == next_next_form.second->is_plural() &&
                                                             form->get_gender() == next_next_form.second->get_gender()) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -410,7 +410,7 @@ int main(int argc, char* argv[]) {
                                                     for (const auto& form : variant.forms) {
                                                         if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
                                                             current_form = {variant.english_base, form};
-                                                            goto next_form;
+                                                            goto next_cycle;
                                                         }
                                                     }
                                                 }
@@ -430,7 +430,7 @@ int main(int argc, char* argv[]) {
                                                 if (form->part_of_speech == PART_OF_SPEECH_PREPOSITION &&
                                                     form->get_casus() == next_form.second->get_casus()) {
                                                     current_form = {variant.english_base, form};
-                                                    goto next_form;
+                                                    goto next_cycle;
                                                 }
                                             }
                                         }
@@ -444,7 +444,7 @@ int main(int argc, char* argv[]) {
                                                     form->is_plural() == next_form.second->is_plural() &&
                                                     form->get_gender() == next_form.second->get_gender()) {
                                                     current_form = {variant.english_base, form};
-                                                    goto next_form;
+                                                    goto next_cycle;
                                                 }
                                             }
                                         }
@@ -455,7 +455,7 @@ int main(int argc, char* argv[]) {
                                             for (const auto& form : variant.forms) {
                                                 if (form->part_of_speech == PART_OF_SPEECH_ADVERB) {
                                                     current_form = {variant.english_base, form};
-                                                    goto next_form;
+                                                    goto next_cycle;
                                                 }
                                             }
                                         }
@@ -466,11 +466,6 @@ int main(int argc, char* argv[]) {
                                     }
                                 }
                             }
-
-                            continue;
-
-                        next_form:
-                            resolved = true;
                         }
 
                         // PHASE 2.2: RESOLVE SETS OF UNKNOWNS USING COMMONALITIES
