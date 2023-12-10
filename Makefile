@@ -4,7 +4,6 @@ LDLIBS = -lcrypto
 HEADERS = $(shell find . -name "*.hpp")
 OBJDIR = obj
 OBJS = $(OBJDIR)/main.o $(OBJDIR)/dictionary.o $(OBJDIR)/translate.o $(OBJDIR)/serialize.o $(OBJDIR)/polynet.o $(OBJDIR)/polyweb.o $(OBJDIR)/polyweb_string.o
-PREFIX = /usr/local
 TARGET = declengine
 
 $(TARGET): $(OBJS) whitakers-words/bin/words

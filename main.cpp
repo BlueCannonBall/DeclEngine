@@ -725,7 +725,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << "Latin Declengine listening on port 8000" << std::endl;
+    std::cout << "DeclEngine listening on port " << port << std::endl;
     if (server->listen() == PN_ERROR) {
         std::cerr << "Error: " << pw::universal_strerror() << std::endl;
         return 1;
