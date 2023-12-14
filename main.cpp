@@ -75,6 +75,10 @@ int main(int argc, char* argv[]) {
     server->route("/word_info",
         pw::HTTPRoute {
             [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
+                if (req.method != "GET") {
+                    return pw::HTTPResponse::make_basic(405, {{"Allow", "GET"}});
+                }
+
                 pw::QueryParameters::map_type::const_iterator word_it;
                 if ((word_it = req.query_parameters->find("word")) == req.query_parameters->end() ||
                     word_it->second.find(' ') != std::string::npos) {
@@ -120,6 +124,10 @@ int main(int argc, char* argv[]) {
     server->route("/sentence_info",
         pw::HTTPRoute {
             [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
+                if (req.method != "GET") {
+                    return pw::HTTPResponse::make_basic(405, {{"Allow", "GET"}});
+                }
+
                 pw::QueryParameters::map_type::const_iterator input_sentence_it;
                 if ((input_sentence_it = req.query_parameters->find("sentence")) == req.query_parameters->end()) {
                     return pw::HTTPResponse::make_basic(400);
