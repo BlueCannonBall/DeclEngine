@@ -119,7 +119,16 @@ const std::unordered_multimap<std::string, const WordVariant, CaseInsensitiveHas
     },
 };
 
-std::string WhitakersWords::remove_accents(const std::string& str) {
+struct WhitakersWords {
+    boost::process::ipstream out;
+    boost::process::opstream in;
+    boost::process::child child;
+
+    WhitakersWords(const std::string& binary = "bin/words", const std::string& start_dir = "whitakers-words"):
+        child(binary, boost::process::start_dir(start_dir), boost::process::std_out > out, boost::process::std_in < in) {}
+};
+
+std::string Transliterator::operator()(const std::string& str) {
     locale_t old_locale = uselocale(us_locale);
 
     char input[str.size()];
@@ -138,20 +147,7 @@ std::string WhitakersWords::remove_accents(const std::string& str) {
 }
 
 size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) {
-    thread_local WhitakersWords words;
-
-    // Remove accents, punctuation, and Js
-    std::string ascii_word = words.remove_accents(word);
-    ascii_word.erase(std::remove_if(ascii_word.begin(), ascii_word.end(), ispunct), ascii_word.end());
-    for (char& c : ascii_word) {
-        if (c == 'j') {
-            c = 'i';
-        } else if (c == 'J') {
-            c = 'I';
-        }
-    }
-
-    auto range = internal_dictionary.equal_range(ascii_word);
+    auto range = internal_dictionary.equal_range(word);
     if (range.first != range.second) {
         std::transform(range.first, range.second, std::back_inserter(ret), [](const auto& entry) {
             return entry.second;
@@ -161,7 +157,7 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
 
     // Check if word is entirely composed of digits
     bool is_all_digits = true;
-    for (char c : ascii_word) {
+    for (char c : word) {
         if (!isdigit(c)) {
             is_all_digits = false;
         }
@@ -171,8 +167,9 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
     }
 
     // Reset Whitaker's Words state
+    thread_local WhitakersWords words;
     words.out.ignore(std::numeric_limits<std::streamsize>::max(), '>');
-    words.in << ascii_word << std::endl;
+    words.in << word << std::endl;
 
     bool last_line_empty = false;
     for (WordVariant variant; words.out;) {
@@ -201,7 +198,7 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         std::string split_word;
         ss >> split_word;
         split_word.erase(std::remove(split_word.begin(), split_word.end(), '.'), split_word.end());
-        if (!pw::string::iequals(split_word, ascii_word)) {
+        if (!pw::string::iequals(split_word, word)) {
             if (!variant.forms.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
                 std::string first_english_base;
 
