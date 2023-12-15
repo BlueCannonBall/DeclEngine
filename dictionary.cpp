@@ -166,9 +166,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         return 0;
     }
 
-    // Reset Whitaker's Words state
     thread_local WhitakersWords words;
-    words.out.ignore(std::numeric_limits<std::streamsize>::max(), '>');
+    words.out.ignore(std::numeric_limits<std::streamsize>::max(), '>'); // Reset state
     words.in << word << std::endl;
 
     bool last_line_empty = false;

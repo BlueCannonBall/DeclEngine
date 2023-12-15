@@ -4,6 +4,7 @@
 #include "words.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -138,15 +139,8 @@ int main(int argc, char* argv[]) {
 
                 std::vector<std::vector<WordVariant>> input_words;
                 for (auto string_word_it = split_input_sentence.begin(); string_word_it != split_input_sentence.end(); ++string_word_it) {
-                    std::string beginning_punctuation;
-                    std::string ending_punctuation;
-                    for (size_t i = 0; i < string_word_it->size() && ispunct((*string_word_it)[i]); ++i) {
-                        beginning_punctuation.push_back((*string_word_it)[i]);
-                    }
-                    for (size_t i = string_word_it->size(); i-- > 0 && ispunct((*string_word_it)[i]);) {
-                        ending_punctuation.insert(ending_punctuation.begin(), (*string_word_it)[i]);
-                    }
-                    std::string stripped_word = string_word_it->substr(beginning_punctuation.size(), string_word_it->size() - beginning_punctuation.size() - ending_punctuation.size());
+                    std::string stripped_word = *string_word_it;
+                    stripped_word.erase(std::remove_if(stripped_word.begin(), stripped_word.end(), ispunct), stripped_word.end()); // Remove punctuation in the middle
 
                     std::vector<WordVariant> word;
                     if (!query_dictionary(stripped_word, word)) {
