@@ -58,6 +58,7 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
         case 'o':
         case 'h':
         case 's':
+        case 'x':
             ret.push_back('e');
             break;
         }
@@ -364,6 +365,7 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     case 'o':
                     case 'h':
                     case 's':
+                    case 'x':
                         ret.push_back('e');
                         break;
                     }
