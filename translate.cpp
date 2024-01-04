@@ -53,12 +53,18 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
                 break;
             }
             ret.back() = 'i';
+            goto add_e;
+
+        case 'x':
+            if (english_base.size() >= 2 && english_base[english_base.size() - 2] == 't') {
+                break;
+            }
         case 'a':
         case 'i':
         case 'o':
         case 'h':
         case 's':
-        case 'x':
+        add_e:
             ret.push_back('e');
             break;
         }
@@ -360,12 +366,18 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                             break;
                         }
                         ret.back() = 'i';
+                        goto add_e;
+
+                    case 'x':
+                        if (english_base.size() >= 2 && english_base[english_base.size() - 2] == 't') {
+                            break;
+                        }
                     case 'a':
                     case 'i':
                     case 'o':
                     case 'h':
                     case 's':
-                    case 'x':
+                    add_e:
                         ret.push_back('e');
                         break;
                     }
