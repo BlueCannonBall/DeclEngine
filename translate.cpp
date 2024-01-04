@@ -56,7 +56,9 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
             goto add_e;
 
         case 'x':
-            if (english_base.size() >= 2 && english_base[english_base.size() - 2] == 't') {
+            if (english_base.size() >= 2 &&
+                (english_base[english_base.size() - 2] == 't' ||
+                    english_base[english_base.size() - 2] == 'p')) {
                 break;
             }
         case 'a':
@@ -369,7 +371,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                         goto add_e;
 
                     case 'x':
-                        if (english_base.size() >= 2 && english_base[english_base.size() - 2] == 't') {
+                        if (english_base.size() >= 2 &&
+                            (english_base[english_base.size() - 2] == 't' ||
+                                english_base[english_base.size() - 2] == 'p')) {
                             break;
                         }
                     case 'a':
