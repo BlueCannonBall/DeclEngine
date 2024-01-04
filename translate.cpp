@@ -392,9 +392,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     ret += "ng";
                 } else {
                     if (is_short(english_base) &&
-                        is_consonant(english_base.back()) &&
+                        is_consonant(english_base.back(), false) &&
                         tolower(english_base.back()) != 'w') {
-                        ret += ret.back();
+                        ret.push_back(ret.back());
                     }
                     ret += "ing";
                 }
@@ -414,9 +414,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     } else if (ret.back() == 'y') {
                         ret.back() = 'i';
                     } else if (is_short(english_base) &&
-                               is_consonant(english_base.back()) &&
+                               is_consonant(english_base.back(), false) &&
                                tolower(english_base.back()) != 'w') {
-                        ret += ret.back();
+                        ret.push_back(ret.back());
                     }
                     ret += "ed";
                 }
@@ -444,9 +444,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     } else if (ret.back() == 'y') {
                         ret.back() = 'i';
                     } else if (is_short(english_base) &&
-                               is_consonant(english_base.back()) &&
+                               is_consonant(english_base.back(), false) &&
                                tolower(english_base.back()) != 'w') {
-                        ret += ret.back();
+                        ret.push_back(ret.back());
                     }
                     ret += "ed";
                 }
@@ -472,9 +472,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                     } else if (ret.back() == 'y') {
                         ret.back() = 'i';
                     } else if (is_short(english_base) &&
-                               is_consonant(english_base.back()) &&
+                               is_consonant(english_base.back(), false) &&
                                tolower(english_base.back()) != 'w') {
-                        ret += ret.back();
+                        ret.push_back(ret.back());
                     }
                     ret += "ed";
                 }
@@ -502,9 +502,9 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             } else if (ret.back() == 'y') {
                 ret.back() = 'i';
             } else if (is_short(english_base) &&
-                       is_consonant(english_base.back()) &&
+                       is_consonant(english_base.back(), false) &&
                        tolower(english_base.back()) != 'w') {
-                ret += ret.back();
+                ret.push_back(ret.back());
             }
             ret += "ed";
         }
@@ -540,9 +540,9 @@ std::string Participle::english_equivalent(const std::string& english_base) cons
         ret += "ng";
     } else {
         if (is_short(english_base) &&
-            is_consonant(english_base.back()) &&
+            is_consonant(english_base.back(), false) &&
             tolower(english_base.back()) != 'w') {
-            ret += ret.back();
+            ret.push_back(ret.back());
         }
         ret += "ing";
     }
