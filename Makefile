@@ -83,4 +83,3 @@ clean:
 	@rm -rf declengine obj
 	@printf '\033[1m[POLYBUILD]\033[0m Finished deleting declengine and obj!\n'
 .PHONY: clean
-
