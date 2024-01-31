@@ -1,0 +1,8 @@
+[paths]
+output = "declengine"
+source = [".", "Polyweb", "Polyweb/Polynet"]
+artifact = "obj"
+
+[options]
+compilation-flags = "-Wall -std=c++14 -Ofast -pthread"
+libraries = ["ssl", "crypto"]

@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     settings.close();
 
     pn::init();
-    pn::UniqueSock<pw::Server> server;
+    pn::UniqueSocket<pw::Server> server;
 
     server->route("/word_info",
         pw::HTTPRoute {
