@@ -2,6 +2,7 @@
 #include "Polyweb/string.hpp"
 #include "words.hpp"
 #include <algorithm>
+#include <boost/process.hpp>
 #include <cctype>
 #include <iterator>
 #include <memory>

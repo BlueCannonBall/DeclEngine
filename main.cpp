@@ -136,6 +136,9 @@ int main(int argc, char* argv[]) {
 
                 thread_local Transliterator transliterator;
                 std::vector<std::string> split_input_sentence = pw::string::split_and_trim(transliterator(input_sentence_it->second), ' ');
+                if (split_input_sentence.empty()) {
+                    return pw::HTTPResponse::make_basic(400);
+                }
 
                 std::vector<std::vector<WordVariant>> input_words;
                 for (auto string_word_it = split_input_sentence.begin(); string_word_it != split_input_sentence.end(); ++string_word_it) {
@@ -702,31 +705,14 @@ int main(int argc, char* argv[]) {
                     }
 
                     if (i) {
-                        output_sentence += "<SEP>";
+                        output_sentence += "<S>";
                     }
-                    if (output_forms[i].second->is_noun_like()) {
-                        switch (output_forms[i].second->get_casus()) {
-                        case CASUS_NOMINATIVE: output_sentence += "<NOM>"; break;
-                        case CASUS_GENITIVE: output_sentence += "<GEN>"; break;
-                        case CASUS_DATIVE: output_sentence += "<DAT>"; break;
-                        case CASUS_ACCUSATIVE: output_sentence += "<ACC>"; break;
-                        case CASUS_ABLATIVE: output_sentence += "<ABL>"; break;
-                        case CASUS_VOCATIVE: output_sentence += "<VOC>"; break;
-                        case CASUS_LOCATIVE: output_sentence += "<LOC>"; break;
-                        default: throw std::logic_error("Invalid case");
-                        }
+                    try {
+                        output_sentence += beginning_punctuation + output_forms[i].second->tokenize() + output_forms[i].first + ending_punctuation;
+                    } catch (const std::exception& e) {
+                        std::cout << e.what() << std::endl;
                     }
-                    output_sentence += beginning_punctuation + output_forms[i].second->english_equivalent(output_forms[i].first) + ending_punctuation;
                 }
-
-                // std::vector<std::string> split_output_sentence = pw::string::split(output_sentence, ' ');
-                // split_output_sentence.erase(std::unique(split_output_sentence.begin(), split_output_sentence.end()), split_output_sentence.end());
-
-                // output_sentence = split_output_sentence.front();
-                // for (size_t i = 1; i < split_output_sentence.size(); ++i) {
-                //     output_sentence.push_back(' ');
-                //     output_sentence += split_output_sentence[i];
-                // }
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
             },

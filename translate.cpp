@@ -11,17 +11,17 @@
 
 using nlohmann::json;
 
-inline bool is_vowel(char c, bool include_y = false) {
+bool is_vowel(char c, bool include_y = false) {
     c = tolower(c);
     return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || (include_y && c == 'y');
 }
 
-inline bool is_consonant(char c, bool include_y = true) {
+bool is_consonant(char c, bool include_y = true) {
     c = tolower(c);
     return c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u' && (include_y || c != 'y');
 }
 
-inline bool is_short(const std::string& word) {
+bool is_short(const std::string& word) {
     return word.size() < 2 || std::find_if(word.begin(), std::prev(word.end()), [](char c) {
         return is_vowel(c);
     }) == word.end() - 2;

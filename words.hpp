@@ -96,21 +96,22 @@ public:
 
     virtual ~WordForm() = default;
     virtual std::string english_equivalent(const std::string& english_base) const = 0;
+    virtual std::string tokenize() const;
     virtual nlohmann::json to_json() const;
 
-    virtual inline Casus get_casus() const { return CASUS_NONE; }
-    virtual inline Gender get_gender() const { return GENDER_NONE; }
-    virtual inline Degree get_degree() const { return DEGREE_NONE; }
-    virtual inline Tense get_tense() const { return TENSE_NONE; }
-    virtual inline Voice get_voice() const { return VOICE_NONE; }
-    virtual inline Mood get_mood() const { return MOOD_NONE; }
-    virtual inline NumeralType get_numeral_type() const { return NUMERAL_TYPE_NONE; }
-    virtual inline Declension get_declension() const { return 0; }
-    virtual inline Conjugation get_conjugation() const { return 0; }
-    virtual inline Person get_person() const { return 0; }
-    virtual inline bool is_plural() const { return false; }
+    virtual Casus get_casus() const { return CASUS_NONE; }
+    virtual Gender get_gender() const { return GENDER_NONE; }
+    virtual Degree get_degree() const { return DEGREE_NONE; }
+    virtual Tense get_tense() const { return TENSE_NONE; }
+    virtual Voice get_voice() const { return VOICE_NONE; }
+    virtual Mood get_mood() const { return MOOD_NONE; }
+    virtual NumeralType get_numeral_type() const { return NUMERAL_TYPE_NONE; }
+    virtual Declension get_declension() const { return 0; }
+    virtual Conjugation get_conjugation() const { return 0; }
+    virtual Person get_person() const { return 0; }
+    virtual bool is_plural() const { return false; }
 
-    virtual inline bool is_noun_like() const { return false; }
+    virtual bool is_noun_like() const { return false; }
 };
 
 class Noun : public WordForm {
@@ -130,14 +131,15 @@ public:
         gender(gender) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline Casus get_casus() const override { return casus; }
-    inline Gender get_gender() const override { return gender; }
-    inline Declension get_declension() const override { return declension; }
-    inline bool is_plural() const override { return plural; }
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Declension get_declension() const override { return declension; }
+    bool is_plural() const override { return plural; }
 
-    inline bool is_noun_like() const override { return true; }
+    bool is_noun_like() const override { return true; }
 };
 
 class Verb : public WordForm {
@@ -161,14 +163,15 @@ public:
         plural(plural) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline Tense get_tense() const override { return tense; }
-    inline Voice get_voice() const override { return voice; }
-    inline Mood get_mood() const override { return mood; }
-    inline Conjugation get_conjugation() const override { return conjugation; }
-    inline Person get_person() const override { return person; }
-    inline bool is_plural() const override { return plural; }
+    Tense get_tense() const override { return tense; }
+    Voice get_voice() const override { return voice; }
+    Mood get_mood() const override { return mood; }
+    Conjugation get_conjugation() const override { return conjugation; }
+    Person get_person() const override { return person; }
+    bool is_plural() const override { return plural; }
 };
 
 class Participle : public WordForm {
@@ -192,16 +195,17 @@ public:
         voice(voice) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline Casus get_casus() const override { return casus; }
-    inline Gender get_gender() const override { return gender; }
-    inline Tense get_tense() const override { return tense; }
-    inline Voice get_voice() const override { return voice; }
-    inline Conjugation get_conjugation() const override { return conjugation; }
-    inline bool is_plural() const override { return plural; }
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Tense get_tense() const override { return tense; }
+    Voice get_voice() const override { return voice; }
+    Conjugation get_conjugation() const override { return conjugation; }
+    bool is_plural() const override { return plural; }
 
-    inline bool is_noun_like() const override { return true; }
+    bool is_noun_like() const override { return true; }
 };
 
 class Supine : public WordForm {
@@ -221,12 +225,13 @@ public:
         gender(gender) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline Casus get_casus() const override { return casus; }
-    inline Gender get_gender() const override { return gender; }
-    inline Conjugation get_conjugation() const override { return conjugation; }
-    inline bool is_plural() const override { return plural; }
+    Casus get_casus() const override { return casus; }
+    Gender get_gender() const override { return gender; }
+    Conjugation get_conjugation() const override { return conjugation; }
+    bool is_plural() const override { return plural; }
 };
 
 class Adjective : public Noun {
@@ -242,11 +247,12 @@ public:
     }
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline Degree get_degree() const override { return degree; }
+    Degree get_degree() const override { return degree; }
 
-    inline bool is_noun_like() const override { return false; }
+    bool is_noun_like() const override { return false; }
 };
 
 class Adverb : public WordForm {
@@ -260,9 +266,10 @@ public:
         degree(degree) {}
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline Degree get_degree() const override { return degree; }
+    Degree get_degree() const override { return degree; }
 };
 
 class Pronoun : public Noun {
@@ -282,7 +289,7 @@ public:
     Conjunction(PartOfSpeech part_of_speech = PART_OF_SPEECH_CONJUNCTION):
         WordForm(part_of_speech) {}
 
-    inline std::string english_equivalent(const std::string& english_base) const override {
+    std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
     }
 };
@@ -297,10 +304,11 @@ public:
         WordForm(PART_OF_SPEECH_PREPOSITION),
         casus(casus) {}
 
-    inline std::string english_equivalent(const std::string& english_base) const override {
+    std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
     }
 
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
     Casus get_casus() const override { return casus; }
@@ -311,7 +319,7 @@ public:
     Interjection(PartOfSpeech part_of_speech = PART_OF_SPEECH_INTERJECTION):
         WordForm(part_of_speech) {}
 
-    inline std::string english_equivalent(const std::string& english_base) const override {
+    std::string english_equivalent(const std::string& english_base) const override {
         return english_base;
     }
 };
@@ -329,9 +337,10 @@ public:
     }
 
     std::string english_equivalent(const std::string& english_base) const override;
+    std::string tokenize() const override;
     nlohmann::json to_json() const override;
 
-    inline NumeralType get_numeral_type() const override { return type; }
+    NumeralType get_numeral_type() const override { return type; }
 
-    inline bool is_noun_like() const override { return false; }
+    bool is_noun_like() const override { return false; }
 };

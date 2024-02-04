@@ -1,7 +1,6 @@
 #pragma once
 
 #include "words.hpp"
-#include <boost/process.hpp>
 #include <clocale>
 #include <cstddef>
 #include <iconv.h>
@@ -38,6 +37,10 @@ struct WordVariant {
 
     bool is_valid() const {
         return !forms.empty();
+    }
+
+    operator bool() const {
+        return is_valid();
     }
 };
 

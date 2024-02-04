@@ -25,6 +25,12 @@ obj/main.o: ./main.cpp ./Polyweb/polyweb.hpp ./Polyweb/Polynet/polynet.hpp ./Pol
 	@$(compiler) -c $< $(compilation_flags) -o $@
 	@printf '\033[1m[POLYBUILD]\033[0m Finished compiling $@ from $<!\n'
 
+obj/tokenize.o: ./tokenize.cpp ./words.hpp ./json_fwd.hpp
+	@printf '\033[1m[POLYBUILD]\033[0m Compiling $@ from $<...\n'
+	@mkdir -p obj
+	@$(compiler) -c $< $(compilation_flags) -o $@
+	@printf '\033[1m[POLYBUILD]\033[0m Finished compiling $@ from $<!\n'
+
 obj/serialize.o: ./serialize.cpp ./json.hpp ./words.hpp ./json_fwd.hpp
 	@printf '\033[1m[POLYBUILD]\033[0m Compiling $@ from $<...\n'
 	@mkdir -p obj
@@ -73,7 +79,7 @@ obj/polynet.o: Polyweb/Polynet/polynet.cpp Polyweb/Polynet/polynet.hpp Polyweb/P
 	@$(compiler) -c $< $(compilation_flags) -o $@
 	@printf '\033[1m[POLYBUILD]\033[0m Finished compiling $@ from $<!\n'
 
-declengine: obj/translate.o obj/dictionary.o obj/main.o obj/serialize.o obj/server.o obj/client.o obj/string.o obj/polyweb.o obj/websocket.o obj/secure_sockets.o obj/polynet.o
+declengine: obj/translate.o obj/dictionary.o obj/main.o obj/tokenize.o obj/serialize.o obj/server.o obj/client.o obj/string.o obj/polyweb.o obj/websocket.o obj/secure_sockets.o obj/polynet.o
 	@printf '\033[1m[POLYBUILD]\033[0m Building $@...\n'
 	@$(compiler) $^ $(compilation_flags) $(libraries) -o $@
 	@printf '\033[1m[POLYBUILD]\033[0m Finished building $@!\n'
