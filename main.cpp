@@ -6,6 +6,7 @@
 #include <cctype>
 #include <cstddef>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
@@ -13,6 +14,14 @@
 #include <utility>
 
 using nlohmann::json;
+
+auto cross_origin_middleware(std::function<pw::HTTPResponse(const pw::Connection&, const pw::HTTPRequest& req, void*)> cb) -> decltype(cb) {
+    return [cb = std::move(cb)](const pw::Connection& conn, const pw::HTTPRequest& req, void* data) -> pw::HTTPResponse {
+        pw::HTTPResponse ret = cb(conn, req, data);
+        ret.headers["Access-Control-Allow-Origin"] = '*';
+        return ret;
+    };
+}
 
 int main(int argc, char* argv[]) {
     std::string port = argc >= 2 ? argv[1] : "8000";
@@ -75,7 +84,7 @@ int main(int argc, char* argv[]) {
 
     server->route("/word_info",
         pw::HTTPRoute {
-            [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
+            cross_origin_middleware([](const pw::Connection&, const pw::HTTPRequest& req, void*) {
                 if (req.method != "GET") {
                     return pw::HTTPResponse::make_basic(405, {{"Allow", "GET"}});
                 }
@@ -119,12 +128,12 @@ int main(int argc, char* argv[]) {
                 } else {
                     return pw::HTTPResponse::make_basic(404);
                 }
-            },
+            }),
         });
 
     server->route("/sentence_info",
         pw::HTTPRoute {
-            [](const pw::Connection&, const pw::HTTPRequest& req, void*) {
+            cross_origin_middleware([](const pw::Connection&, const pw::HTTPRequest& req, void*) {
                 if (req.method != "GET") {
                     return pw::HTTPResponse::make_basic(405, {{"Allow", "GET"}});
                 }
@@ -715,7 +724,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
-            },
+            }),
         });
 
     if (server->bind("0.0.0.0", port) == PN_ERROR) {
