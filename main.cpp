@@ -720,11 +720,7 @@ int main(int argc, char* argv[]) {
                     if (i) {
                         output_sentence += "<S>";
                     }
-                    try {
-                        output_sentence += beginning_punctuation + output_forms[i].second->tokenize() + output_forms[i].first + ending_punctuation;
-                    } catch (const std::exception& e) {
-                        std::cout << e.what() << std::endl;
-                    }
+                    output_sentence += beginning_punctuation + output_forms[i].second->tokenize() + output_forms[i].first + ending_punctuation;
                 }
 
                 return pw::HTTPResponse(200, output_sentence, {{"Content-Type", "text/plain"}});
