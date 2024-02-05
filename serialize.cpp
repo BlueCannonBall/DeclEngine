@@ -201,11 +201,11 @@ json Numeral::to_json() const {
     json ret = Noun::to_json();
 
     switch (type) {
-    case NUMERAL_TYPE_CARDINAL: ret["degree"] = "cardinal"; break;
-    case NUMERAL_TYPE_ORDINAL: ret["degree"] = "ordinal"; break;
-    case NUMERAL_TYPE_DISTRIBUTIVE: ret["degree"] = "distributive"; break;
-    case NUMERAL_TYPE_ADVERB: ret["degree"] = "adverb"; break;
-    default: throw std::logic_error("Invalid degree");
+    case NUMERAL_TYPE_CARDINAL: ret["type"] = "cardinal"; break;
+    case NUMERAL_TYPE_ORDINAL: ret["type"] = "ordinal"; break;
+    case NUMERAL_TYPE_DISTRIBUTIVE: ret["type"] = "distributive"; break;
+    case NUMERAL_TYPE_ADVERB: ret["type"] = "adverb"; break;
+    default: throw std::logic_error("Invalid type");
     }
 
     return ret;
