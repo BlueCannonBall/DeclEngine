@@ -17,9 +17,9 @@ using nlohmann::json;
 
 auto cross_origin_middleware(std::function<pw::HTTPResponse(const pw::Connection&, const pw::HTTPRequest& req, void*)> cb) -> decltype(cb) {
     return [cb = std::move(cb)](const pw::Connection& conn, const pw::HTTPRequest& req, void* data) -> pw::HTTPResponse {
-        pw::HTTPResponse ret = cb(conn, req, data);
-        ret.headers["Access-Control-Allow-Origin"] = '*';
-        return ret;
+        pw::HTTPResponse resp = cb(conn, req, data);
+        resp.headers["Access-Control-Allow-Origin"] = '*';
+        return resp;
     };
 }
 
