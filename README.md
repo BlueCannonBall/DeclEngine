@@ -22,5 +22,5 @@ $ curl "http://localhost:8000/word_info?word=amat"
 ]
 
 $ curl "http://localhost:8000/sentence_info?sentence=In+principio+creavit+Deus+caelum+et+terram."
-in<SEP><ABL>beginning,<SEP>it created<SEP><NOM>God<SEP><ACC>heaven<SEP>and<SEP><ACC>earth.
+<F:PREP><C:ABL>in<S><F:N><C:ABL><P:F><G:N>beginning<S><F:V><T:PERF><V:A><M:IND><PPL:3><P:F>create<S><F:N><C:N><P:F><G:M>God<S><F:N><C:ACC><P:F><G:M>heaven<S><F:C>and<S><F:N><C:ACC><P:F><G:F>earth.
 ```
