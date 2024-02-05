@@ -9,7 +9,6 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
