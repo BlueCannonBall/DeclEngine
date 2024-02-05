@@ -82,6 +82,10 @@ int main(int argc, char* argv[]) {
     pn::init();
     pn::UniqueSocket<pw::Server> server;
 
+    server->on_error = [](uint16_t status_code) {
+        return pw::HTTPResponse::make_basic(status_code, {{"Access-Control-Allow-Origin", "*"}});
+    };
+
     server->route("/word_info",
         pw::HTTPRoute {
             cross_origin_middleware([](const pw::Connection&, const pw::HTTPRequest& req, void*) {
