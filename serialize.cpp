@@ -78,6 +78,7 @@ json Verb::to_json() const {
     default: throw std::logic_error("Invalid mood");
     }
 
+    ret["person"] = person + 1;
     ret["plural"] = plural;
 
     return ret;
