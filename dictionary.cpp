@@ -11,21 +11,9 @@
 #include <sstream>
 #include <unordered_map>
 
-struct CaseInsensitiveComparer {
-    bool operator()(const std::string& a, const std::string& b) const {
-        return pw::string::iequals(a, b);
-    }
-};
-
-struct CaseInsensitiveHasher {
-    size_t operator()(const std::string& str) const {
-        return std::hash<std::string>()(pw::string::to_lower_copy(str));
-    }
-};
-
 // These dictionary entries are some of my own, and when any are found for a given word, they take precedence over all of Whitaker's entries.
 // Some of these exist because I disagree with Whitaker's definitions, and others exist because some of Whitaker's entries are unparseable.
-const std::unordered_multimap<std::string, const WordVariant, CaseInsensitiveHasher, CaseInsensitiveComparer> internal_dictionary = {
+const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseInsensitiveHasher, pw::string::CaseInsensitiveComparer> internal_dictionary = {
     {
         "quid",
         {
@@ -176,7 +164,7 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         std::string line;
         std::getline(words.out, line, '\n');
 
-        static std::regex comments_re("(\\(.*\\))|(\\[.*\\])", std::regex_constants::optimize);
+        static std::regex comments_re("(\\([^\\(\\)]*\\))|(\\[[^\[\\]]*\\])", std::regex_constants::optimize);
         line = std::regex_replace(pw::string::trim_right_copy(line), comments_re, "");
 
         if (line.empty() && last_line_empty) {
