@@ -11,6 +11,8 @@
 
 using nlohmann::json;
 
+thread_local std::unordered_map<std::string, std::pair<std::string, std::string>> irregular_verbs;
+
 bool is_vowel(char c, bool include_y = false) {
     c = tolower(c);
     return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || (include_y && c == 'y');
@@ -25,6 +27,19 @@ bool is_short(const std::string& word) {
     return word.size() < 2 || std::find_if(word.begin(), std::prev(word.end()), [](char c) {
         return is_vowel(c);
     }) == word.end() - 2;
+}
+
+void init_irregular_verbs() {
+    if (irregular_verbs.empty()) {
+        std::ifstream irregular_verbs_file("irregular_verbs.json");
+        if (irregular_verbs_file.is_open()) {
+            json irregular_verbs_json = json::parse(irregular_verbs_file);
+            irregular_verbs.reserve(irregular_verbs_json.size());
+            for (const auto& verb : irregular_verbs_json.items()) {
+                irregular_verbs[verb.key()] = std::make_pair<std::string, std::string>(verb.value()["past"], verb.value()["past_participle"]);
+            }
+        }
+    }
 }
 
 std::string Noun::english_equivalent(const std::string& english_base) const {
@@ -328,7 +343,6 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
             },
         },
     };
-    thread_local std::unordered_map<std::string, std::pair<std::string, std::string>> irregular_verbs;
 
     if (conjugation == 5 && english_base == "be") {
         if (be[mood][tense][person][plural]) {
@@ -341,19 +355,8 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
         ret = prefixes[voice][mood][tense][person][plural]; // Add prefix
     }
 
-    // Generate irregular verbs table
-    if (irregular_verbs.empty()) {
-        std::ifstream irregular_verbs_file("irregular_verbs.json");
-        if (irregular_verbs_file.is_open()) {
-            json irregular_verbs_json = json::parse(irregular_verbs_file);
-            irregular_verbs.reserve(irregular_verbs_json.size());
-            for (const auto& verb : irregular_verbs_json.items()) {
-                irregular_verbs[verb.key()] = std::make_pair<std::string, std::string>(verb.value()["past"], verb.value()["past_participle"]);
-            }
-        }
-    }
-
     // Add suffix
+    init_irregular_verbs();
     switch (voice) {
     case VOICE_ACTIVE:
         switch (mood) {
@@ -523,32 +526,73 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
 }
 
 std::string Participle::english_equivalent(const std::string& english_base) const {
-    static constexpr const char* prefixes[7] = {
-        nullptr,
-        "of ",
-        "to/for ",
-        nullptr,
-        "by ",
+    static constexpr const char* prefixes[2][6] = {
+        // Active voice
+        {
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            "about to ", // Future tense
+        },
+        // Passive voice
+        {
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            "to be ", // Future tense
+        },
     };
 
     std::string ret;
-    if (prefixes[casus]) {
-        ret = prefixes[casus] + english_base; // Add prefix
-    } else {
-        ret = english_base;
+    if (prefixes[voice][tense]) {
+        ret = prefixes[voice][tense]; // Add prefix
     }
 
     // Add suffix
-    if (ret.back() == 'e') {
-        ret.back() = 'i';
-        ret += "ng";
-    } else {
-        if (is_short(english_base) &&
-            is_consonant(english_base.back(), false) &&
-            tolower(english_base.back()) != 'w') {
-            ret.push_back(ret.back());
+    init_irregular_verbs();
+    switch (voice) {
+    case VOICE_ACTIVE:
+        ret += english_base;
+        if (tense == TENSE_PRESENT) {
+            if (ret.back() == 'e') {
+                ret.back() = 'i';
+                ret += "ng";
+            } else {
+                if (is_short(english_base) &&
+                    is_consonant(english_base.back(), false) &&
+                    tolower(english_base.back()) != 'w') {
+                    ret.push_back(ret.back());
+                }
+                ret += "ing";
+            }
         }
-        ret += "ing";
+        break;
+
+    case VOICE_PASSIVE: {
+        decltype(irregular_verbs)::const_iterator irregular_verb_it;
+        if ((irregular_verb_it = irregular_verbs.find(english_base)) != irregular_verbs.end()) {
+            ret += irregular_verb_it->second.second;
+        } else {
+            ret += english_base;
+            if (ret.back() == 'e') {
+                ret.push_back('d');
+                break;
+            } else if (ret.back() == 'y') {
+                ret.back() = 'i';
+            } else if (is_short(english_base) &&
+                       is_consonant(english_base.back(), false) &&
+                       tolower(english_base.back()) != 'w') {
+                ret.push_back(ret.back());
+            }
+            ret += "ed";
+        }
+        break;
+    }
+
+    default:
+        throw std::logic_error("Invalid voice");
     }
 
     return ret;
