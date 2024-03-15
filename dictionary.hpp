@@ -19,6 +19,7 @@ inline size_t hash(const std::string& str, size_t i = 0) {
 struct WordVariant {
     std::vector<std::shared_ptr<WordForm>> forms;
     std::string english_base;
+    std::string breakdown;
 
     static WordVariant make_proper_noun(const std::string& english_base) {
         return {

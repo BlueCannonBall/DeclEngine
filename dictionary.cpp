@@ -183,10 +183,11 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
 
         std::istringstream ss(line);
 
-        std::string split_word;
-        ss >> split_word;
-        split_word.erase(std::remove(split_word.begin(), split_word.end(), '.'), split_word.end());
-        if (!pw::string::iequals(split_word, word)) {
+        std::string breakdown;
+        ss >> breakdown;
+        std::string first_word = breakdown;
+        first_word.erase(std::remove(first_word.begin(), first_word.end(), '.'), first_word.end());
+        if (!pw::string::iequals(first_word, word)) {
             if (!variant.forms.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
                 std::string first_english_base;
 
@@ -212,6 +213,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
                 }
             }
             continue;
+        } else {
+            variant.breakdown = breakdown;
         }
 
         std::string string_part_of_speech;

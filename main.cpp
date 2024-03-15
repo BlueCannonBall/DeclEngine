@@ -116,6 +116,7 @@ int main(int argc, char* argv[]) {
                         json json_variant = {
                             {"forms", json::array()},
                             {"english_base", variant.english_base},
+                            {"breakdown", variant.breakdown},
                         };
 
                         std::transform(variant.forms.begin(), variant.forms.end(), std::back_inserter(json_variant["forms"]), [&variant](const auto& form) {
