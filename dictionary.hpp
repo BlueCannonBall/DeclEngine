@@ -1,19 +1,16 @@
 #pragma once
 
 #include "words.hpp"
-#include <clocale>
-#include <cstddef>
 #include <iconv.h>
+#include <locale.h>
 #include <memory>
+#include <stddef.h>
 #include <string>
+#include <string_view>
 #include <vector>
 
-constexpr size_t hash(const char* str, size_t i = 0) {
-    return !str[i] ? 5381 : (hash(str, i + 1) * 33) ^ str[i];
-}
-
-inline size_t hash(const std::string& str, size_t i = 0) {
-    return !str[i] ? 5381 : (hash(str, i + 1) * 33) ^ str[i];
+constexpr size_t hash(std::string_view str, size_t i = 0) {
+    return i == str.size() ? 5381 : (hash(str, i + 1) * 33) ^ str[i];
 }
 
 struct WordVariant {
@@ -60,7 +57,7 @@ public:
         freelocale(us_locale);
     }
 
-    std::string operator()(const std::string& str);
+    std::string operator()(std::string_view str);
 };
 
 size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret);

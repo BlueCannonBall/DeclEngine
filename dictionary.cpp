@@ -3,7 +3,7 @@
 #include "words.hpp"
 #include <algorithm>
 #include <boost/process.hpp>
-#include <cctype>
+#include <ctype.h>
 #include <iterator>
 #include <memory>
 #include <ostream>
@@ -113,11 +113,11 @@ struct WhitakersWords {
     boost::process::opstream in;
     boost::process::child child;
 
-    WhitakersWords(const std::string& binary = "bin/words", const std::string& start_dir = "whitakers-words"):
+    WhitakersWords(const std::string& binary = "bin/words", std::string_view start_dir = "whitakers-words"):
         child(binary, boost::process::start_dir(start_dir), boost::process::std_out > out, boost::process::std_in < in) {}
 };
 
-std::string Transliterator::operator()(const std::string& str) {
+std::string Transliterator::operator()(std::string_view str) {
     locale_t old_locale = uselocale(us_locale);
 
     char input[str.size()];

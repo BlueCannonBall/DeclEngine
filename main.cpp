@@ -3,12 +3,12 @@
 #include "json.hpp"
 #include "words.hpp"
 #include <algorithm>
-#include <cctype>
-#include <cstddef>
+#include <ctype.h>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <stddef.h>
 #include <string>
 #include <utility>
 

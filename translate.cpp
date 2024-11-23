@@ -1,11 +1,12 @@
 #include "Polyweb/string.hpp"
 #include "json.hpp"
 #include "words.hpp"
-#include <cctype>
-#include <cstring>
+#include <ctype.h>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
+#include <string.h>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 
@@ -23,7 +24,7 @@ bool is_consonant(char c, bool include_y = true) {
     return c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u' && (include_y || c != 'y');
 }
 
-bool is_short(const std::string& word) {
+bool is_short(std::string_view word) {
     return word.size() < 2 || std::find_if(word.begin(), std::prev(word.end()), [](char c) {
         return is_vowel(c);
     }) == word.end() - 2;
