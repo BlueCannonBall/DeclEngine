@@ -189,6 +189,8 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         first_word.erase(std::remove(first_word.begin(), first_word.end(), '.'), first_word.end());
         if (!pw::string::iequals(first_word, word)) {
             if (!variant.forms.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
+                variant.definition = line;
+
                 std::string first_english_base;
 
                 ss.seekg(0);

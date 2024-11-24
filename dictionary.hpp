@@ -16,6 +16,7 @@ constexpr size_t hash(std::string_view str, size_t i = 0) {
 struct WordVariant {
     std::vector<std::shared_ptr<WordForm>> forms;
     std::string english_base;
+    std::string definition;
     std::string breakdown;
 
     static WordVariant make_proper_noun(const std::string& english_base) {

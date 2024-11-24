@@ -116,6 +116,7 @@ int main(int argc, char* argv[]) {
                         json json_variant = {
                             {"forms", json::array()},
                             {"english_base", variant.english_base},
+                            {"definition", variant.definition},
                             {"breakdown", variant.breakdown},
                         };
 
