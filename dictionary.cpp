@@ -146,23 +146,18 @@ std::string Transliterator::operator()(std::string_view str) {
 }
 
 size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) {
+    for (char c : word) {
+        if (!isalpha(c)) {
+            return 0;
+        }
+    }
+
     auto range = internal_dictionary.equal_range(word);
     if (range.first != range.second) {
         std::transform(range.first, range.second, std::back_inserter(ret), [](const auto& entry) {
             return entry.second;
         });
         return ret.size();
-    }
-
-    // Check if word is entirely composed of digits
-    bool is_all_digits = true;
-    for (char c : word) {
-        if (!isdigit(c)) {
-            is_all_digits = false;
-        }
-    }
-    if (is_all_digits) {
-        return 0;
     }
 
     thread_local WhitakersWords words;
