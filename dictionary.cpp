@@ -171,11 +171,11 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
 
     bool last_line_empty = false;
     for (WordVariant variant; words.out;) {
-        std::string line;
-        std::getline(words.out, line, '\n');
+        std::string original_line;
+        std::getline(words.out, original_line, '\n');
 
         static std::regex comments_re("(\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])", std::regex_constants::optimize);
-        line = std::regex_replace(pw::string::trim_right_copy(line), comments_re, "");
+        std::string line = std::regex_replace(pw::string::trim_right_copy(line), comments_re, "");
 
         if (line.empty() && last_line_empty) {
             break;
@@ -199,7 +199,7 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
         first_word.erase(std::remove(first_word.begin(), first_word.end(), '.'), first_word.end());
         if (!pw::string::iequals(first_word, word)) {
             if (!variant.forms.empty() && std::find_if(line.begin(), line.end(), ispunct) != line.end()) {
-                variant.definition = line;
+                variant.definition = original_line;
 
                 std::string first_english_base;
 
