@@ -167,10 +167,11 @@ size_t query_dictionary(const std::string& word, std::vector<WordVariant>& ret) 
     bool last_line_empty = false;
     for (WordVariant variant; words.out;) {
         std::string original_line;
-        std::getline(words.out, original_line, '\n');
+        std::getline(words.out, original_line);
+        pw::string::trim_right(original_line);
 
         static std::regex comments_re("(\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])", std::regex_constants::optimize);
-        std::string line = std::regex_replace(pw::string::trim_right_copy(original_line), comments_re, "");
+        std::string line = std::regex_replace(original_line, comments_re, "");
 
         if (line.empty() && last_line_empty) {
             break;
