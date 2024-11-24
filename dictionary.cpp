@@ -22,6 +22,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Pronoun>(1, CASUS_ACCUSATIVE, false, GENDER_NEUTER),
             },
             .english_base = "what",
+            .definition = "what",
         },
     },
     {
@@ -31,6 +32,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
             .english_base = "down",
+            .definition = "down",
         },
     },
     {
@@ -40,6 +42,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
             .english_base = "about",
+            .definition = "about",
         },
     },
     {
@@ -49,6 +52,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
             .english_base = "by",
+            .definition = "by",
         },
     },
     {
@@ -58,6 +62,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Preposition>(CASUS_ACCUSATIVE),
             },
             .english_base = "before",
+            .definition = "before",
         },
     },
     {
@@ -67,6 +72,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Interjection>(),
             },
             .english_base = "Ah",
+            .definition = "Ah",
         },
     },
     {
@@ -76,6 +82,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Preposition>(CASUS_ABLATIVE),
             },
             .english_base = "for",
+            .definition = "for",
         },
     },
     {
@@ -86,6 +93,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Pronoun>(0, CASUS_ACCUSATIVE, false, GENDER_NEUTER),
             },
             .english_base = "each one",
+            .definition = "each one",
         },
     },
     {
@@ -95,6 +103,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Adjective>(1, CASUS_VOCATIVE, false, GENDER_MASCULINE, DEGREE_POSITIVE),
             },
             .english_base = "rapid",
+            .definition = "rapid",
         },
     },
     {
@@ -104,6 +113,7 @@ const std::unordered_multimap<std::string, const WordVariant, pw::string::CaseIn
                 std::make_shared<Adverb>(DEGREE_POSITIVE),
             },
             .english_base = "rapidly",
+            .definition = "rapidly",
         },
     },
 };
