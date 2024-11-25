@@ -78,7 +78,6 @@ std::string Noun::english_equivalent(const std::string& english_base) const {
                     english_base[english_base.size() - 2] == 'g')) {
                 break;
             }
-        case 'a':
         case 'i':
         case 'o':
         case 's':
@@ -379,7 +378,6 @@ std::string Verb::english_equivalent(const std::string& english_base) const {
                         if (english_base.size() >= 2 && english_base[english_base.size() - 2] == 'p') {
                             break;
                         }
-                    case 'a':
                     case 'i':
                     case 'o':
                     case 's':
